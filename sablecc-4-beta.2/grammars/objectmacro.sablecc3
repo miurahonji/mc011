@@ -1,0 +1,517 @@
+/* This file is part of SableCC ( http://sablecc.org ).
+ *
+ * See the NOTICE file distributed with this work for copyright information.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+Package org.sablecc.objectmacro.syntax3;
+
+Helpers
+
+  // Based on Unicode 5.1.0
+
+  ascii_lu = [0x0041 .. 0x005A];
+  ascii_ll = [0x0061 .. 0x007A];
+
+  ascii_l = [ascii_lu + ascii_ll];
+
+  ascii_nd = [0x0030 .. 0x0039];
+
+  ascii_n = ascii_nd;
+
+  ascii_pc = 0x005F;
+  ascii_pd = 0x002D;
+  ascii_ps = [[0x0028 + 0x005B] + 0x007B];
+  ascii_pe = [[0x0029 + 0x005D] + 0x007D];
+  ascii_po = [[[[0x0021 .. 0x0023] + [0x0025 .. 0x0027]] +
+               [[0x002A + 0x002C] + [0x002E .. 0x002F]]] +
+              [[[0x003A .. 0x003B] + [0x003F .. 0x0040]] + 0x005C]];
+
+  ascii_p = [[[ascii_pc + ascii_pd] + [ascii_ps + ascii_pe]] + ascii_po];
+
+  ascii_sm = [[0x002B + [0x003C .. 0x003E]] + [0x007C + 0x007E]];
+  ascii_sc = 0x0024;
+  ascii_sk = [0x005E + 0x0060];
+
+  ascii_s = [[ascii_sm + ascii_sc] + ascii_sk];
+
+  ascii_zs = 0x0020;
+
+  ascii_z = ascii_zs;
+
+  ascii_cc = [[0x0000 .. 0x001F] + 0x007F];
+
+  ascii_c = ascii_cc;
+
+  ascii = [[[ascii_l + ascii_n] + [ascii_p + ascii_s]] + [ascii_z + ascii_c]];
+
+  ascii_pattern_white_space = [[0x0009 .. 0x000D] + 0x0020];
+  ascii_pattern_syntax = [[[[0x0021 .. 0x002F] + [0x003A .. 0x0040]] +
+                          [[0x005B .. 0x005E] + 0x0060]] + [0x007B .. 0x007E]];
+
+  ascii_id_start = [[0x0041 .. 0x005A] + [0x0061 .. 0x007A]];
+  ascii_id_continue = [[[0x0030 .. 0x0039] + [0x0041 .. 0x005A]] +
+                       [0x005F + [0x0061 .. 0x007A]]];
+
+  ascii_identifier = ascii_id_start ascii_id_continue*;
+
+  ascii_newline = [0x000A .. 0x000D] | 0x000D 0x000A;
+
+  // Other helpers
+
+  white_space_not_newline = [ascii_pattern_white_space - [0x000A .. 0x000D]];
+
+  short_comment_char = [[[ascii - ascii_c] + white_space_not_newline] - '$'];
+  long_comment_char = [[[ascii - ascii_c] + ascii_pattern_white_space] - '$'];
+
+  text_char = [[[ascii - ascii_c] + white_space_not_newline] - ['\' + '$']];
+  text_escape = '\' ['\' + '$'];
+
+  string_char = [[[ascii - ascii_c] + white_space_not_newline] -
+                 [['\' + '$'] + '"']];
+  string_escape = '\' [['\' + '$'] + ['"' + 'n']];
+
+  lowercase = ['a'..'z'];
+  digit = ['0'..'9'];
+
+  normal_part = lowercase (lowercase | digit)*;
+  normal_identifier = normal_part ('_' normal_part)*;
+
+  rich_identifier = '<' [ascii_id_start - '_'] [ascii_id_continue - '_']* '>';
+
+States
+  top_level, command, text, short_comment, long_comment, string;
+
+Tokens
+
+  {top_level, command, text, short_comment}
+  // custom transition: *->command
+  macro_command = '$macro:';
+
+  {top_level, command, text, short_comment}
+  // custom transition: *->command
+  text_block_command = '$text:';
+
+  {top_level, command, text, short_comment}
+  // custom transition: *->command
+  expand_command = '$expand:';
+
+  {top_level, command, text, short_comment}
+  // custom transition: *->command
+  insert_command = '$insert:';
+
+  {top_level, command, text, short_comment}
+  // custom transition: *->command
+  end_command = '$end:';
+
+  {top_level, command, text, short_comment}
+  // custom transition: *->short_comment
+  short_comment_command = '$comment:';
+
+  {top_level, command, text, short_comment}
+  // custom transition: *->previous state
+  command_tail = '$' (white_space_not_newline* ascii_newline)?;
+
+  {top_level, command, text, short_comment, long_comment}
+  // custom transition: *->long_comment
+  long_comment_start = '$comment$';
+
+  {top_level, command, text, short_comment, long_comment}
+  // custom transition: *->previous state
+  long_comment_end = '$end$' (white_space_not_newline* ascii_newline)?;
+
+  {top_level, command, text, short_comment}
+  no_eol = '$no_eol$' white_space_not_newline* ascii_newline;
+
+  {top_level, command, text, short_comment}
+  invalid_mid_line_no_eol = '$no_eol$';
+
+  {top_level, command, text, short_comment}
+  invalid_command = '$' (lowercase | digit | '_')* (':' | '$');
+
+  {short_comment}
+  short_comment_text = short_comment_char+;
+
+  {long_comment}
+  long_comment_text = long_comment_char+ | '$';
+
+  {text}
+  text = text_char+;
+
+  {text}
+  eol = ascii_newline;
+
+  {text}
+  escape = text_escape;
+
+  {top_level, command, text, short_comment}
+  var = '$' (normal_identifier | rich_identifier) |
+        '$(' normal_identifier ')';
+
+  {top_level, command, text, short_comment}
+  invalid_var = '$' ascii_id_continue+ |
+                '$<' ascii_id_continue* '>'? |
+                '$(' ascii_id_continue* ')'?;
+
+  {top_level, command}
+  identifier = normal_identifier | rich_identifier;
+
+  {top_level, command}
+  invalid_identifier = ascii_id_continue+ | '<' ascii_id_continue* '>'?;
+
+  {top_level, command}
+  l_par = '(';
+
+  {top_level, command}
+  r_par = ')';
+
+  {top_level, command}
+  comma = ',';
+
+  {top_level, command}
+  assign = '=';
+
+  {top_level, command}
+  blank = ascii_pattern_white_space+;
+
+  {command->string, string->command}
+  dquote = '"';
+
+  {string}
+  string_text = string_char+;
+
+  {string}
+  string_escape = string_escape;
+
+  ctrl_z = 0x001A;
+
+  invalid_character = [0..0xffff];
+
+Ignored Tokens
+
+  blank;
+
+Productions
+
+  source_file
+    =
+      [source_file_parts]:source_file_part* ctrl_z?
+        {-> New source_file([source_file_parts.source_file_part]) }
+    ;
+
+  source_file_part
+        {-> source_file_part? }
+    =
+      {short_comment} short_comment
+        {-> Null }
+    |
+      {long_comment} long_comment
+        {-> Null }
+    |
+      {macro} macro
+    |
+      {text_block} text_block
+    ;
+
+  short_comment
+    =
+      short_comment_command short_comment_text? command_tail
+    ;
+
+  long_comment
+    =
+      long_comment_start [parts]:long_comment_part* long_comment_end
+    ;
+
+  long_comment_part
+    =
+      {text} long_comment_text
+    |
+      {nested_comment} long_comment
+    ;
+
+  macro
+    =
+      macro_head macro_body macro_tail
+        {-> New macro(macro_head.identifier, [macro_head.params],
+        [macro_body.macro_body_parts], macro_tail.identifier) }
+    ;
+
+  macro_head
+        {-> identifier [params]:param* }
+    =
+      macro_command identifier param_list? command_tail
+        {-> identifier [param_list.params] }
+    ;
+
+  macro_body
+        {-> [macro_body_parts]:macro_body_part* }
+    =
+      [macro_body_parts]:macro_body_part*
+        {-> [macro_body_parts.macro_body_part] }
+    ;
+
+  macro_body_part
+        {-> macro_body_part? }
+    =
+      {short_comment} short_comment
+        {-> Null }
+    |
+      {long_comment} long_comment
+        {-> Null }
+    |
+      {no_eol} no_eol
+        {-> Null }
+    |
+      {text} text
+    |
+      {eol} eol
+    |
+      {escape} escape
+    |
+      {var} var
+    |
+      {expand} expand
+    |
+      {macro} macro
+    |
+      {text_insert} text_insert
+    |
+      {text_block} text_block
+    ;
+
+  macro_tail
+        {-> identifier }
+    =
+      end_command identifier command_tail
+        {-> identifier }
+    ;
+
+  text_block
+    =
+      text_block_head text_block_body text_block_tail
+        {-> New text_block(text_block_head.identifier,
+        [text_block_head.params], [text_block_body.text_block_body_parts],
+        text_block_tail.identifier) }
+    ;
+
+  text_block_head
+        {-> identifier [params]:param* }
+    =
+      text_block_command identifier param_list? command_tail
+        {-> identifier [param_list.params] }
+    ;
+
+  text_block_body
+        {-> [text_block_body_parts]:text_block_body_part* }
+    =
+      [text_block_body_parts]:text_block_body_part*
+        {-> [text_block_body_parts.text_block_body_part] }
+    ;
+
+  text_block_body_part
+        {-> text_block_body_part? }
+    =
+      {short_comment} short_comment
+        {-> Null }
+    |
+      {long_comment} long_comment
+        {-> Null }
+    |
+      {no_eol} no_eol
+        {-> Null }
+    |
+      {text} text
+    |
+      {eol} eol
+    |
+      {escape} escape
+    |
+      {var} var
+    |
+      {text_insert} text_insert
+    |
+      {text_block} text_block
+    ;
+
+  text_block_tail
+        {-> identifier }
+    =
+      end_command identifier command_tail
+        {-> identifier }
+    ;
+
+  param_list
+        {-> [params]:param+ }
+    =
+      l_par param [additional_params]:additional_param* r_par
+        {-> [param, additional_params.param] }
+    ;
+
+  additional_param
+        {-> param }
+    =
+      comma param
+        {-> param }
+    ;
+
+  param
+    =
+      [name]:identifier
+    ;
+
+  expand
+    =
+      expand_command macro_reference_list [options]:option* command_tail
+        {-> New expand([macro_reference_list.macro_references], [options]) }
+    ;
+
+  macro_reference_list
+        {-> [macro_references]:macro_reference* }
+    =
+      macro_reference [additional_macro_references]:additional_macro_reference*
+        {-> [macro_reference, additional_macro_references.macro_reference] }
+    ;
+
+  additional_macro_reference
+        {-> macro_reference }
+    =
+      comma macro_reference
+        {-> macro_reference }
+    ;
+
+  option
+    =
+      comma [name]:identifier assign static_value
+        {-> New option(name, static_value) }
+    ;
+
+  macro_reference
+    =
+      [name]:identifier
+        {-> New macro_reference(name) }
+    ;
+
+  text_insert
+    =
+      insert_command text_block_reference command_tail
+        {-> text_block_reference.text_insert }
+    ;
+
+  text_block_reference
+        {-> text_insert }
+    =
+      [name]:identifier arg_list?
+        {-> New text_insert(name, [arg_list.static_values]) }
+    ;
+
+  arg_list
+        {-> [static_values]:static_value+ }
+    =
+      l_par static_value [additional_static_values]:additional_static_value*
+      r_par
+        {-> [static_value, additional_static_values.static_value] }
+    ;
+
+  additional_static_value
+        {-> static_value }
+    =
+      comma static_value
+        {-> static_value }
+    ;
+
+  static_value
+    =
+      {text_block_reference} text_block_reference
+        {-> New static_value.text_insert(text_block_reference.text_insert) }
+    |
+      {var} var
+    |
+      {string} string
+    ;
+
+  string
+    =
+      [l_dquote]:dquote [parts]:string_part* [r_dquote]:dquote
+        {-> New string([parts]) }
+    ;
+
+  string_part
+    =
+      {text} [text]:string_text
+    |
+      {escape} [escape]:string_escape
+    ;
+
+Abstract Syntax Tree
+
+  source_file =
+    [parts]:source_file_part*;
+
+  source_file_part =
+    {macro} macro |
+    {text_block} text_block;
+
+  macro =
+    [name]:identifier [params]:param* [parts]:macro_body_part*
+    [repeat_name]:identifier;
+
+  macro_body_part =
+    {text} text |
+    {eol} eol |
+    {escape} escape |
+    {var} var |
+    {expand} expand |
+    {macro} macro |
+    {text_insert} text_insert |
+    {text_block} text_block;
+
+  text_block =
+    [name]:identifier [params]:param* [parts]:text_block_body_part*
+    [repeat_name]:identifier;
+
+  text_block_body_part =
+    {text} text |
+    {eol} eol |
+    {escape} escape |
+    {var} var |
+    {text_insert} text_insert |
+    {text_block} text_block;
+
+  param =
+    [name]:identifier;
+
+  expand =
+    [macro_references]:macro_reference+ [options]:option*;
+
+  option =
+    [name]:identifier static_value;
+
+  static_value =
+    {text_insert} text_insert |
+    {var} var |
+    {string} string;
+
+  string =
+    [parts]:string_part*;
+
+  string_part =
+    {text} [text]:string_text |
+    {escape} [escape]:string_escape;
+
+  macro_reference =
+    [name]:identifier;
+
+  text_insert =
+    [name]:identifier  [static_values]:static_value*;
