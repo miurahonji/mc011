@@ -1,27 +1,29 @@
-Grammar lexer:
+Language lexer;
 
 Lexer
 
-  upper_case = 'A'..'Z';
-  lower_case = 'a'..'z';
-  letter = upper_case | lower_case;
-  digit = '0'..'9';
-  tab = #9;
-  eol = #xD | #xA | #xD #xA;
+        upper_case = 'A'..'Z';
+        lower_case = 'a'..'z';
+        letter = upper_case | lower_case;
+        digit = '0'..'9';
+        tab = #9;
+        eol = #xD | #xA | #xD #xA;
 
-  id = letter (letter | digit | '_')*;
-  INTEGER_LITERAL = digit+;
-  op = ('&&' | '<' | '+' | '-' | '*')
+        id = letter (letter | digit | '_')*;
+        int_literal = digit+;
+        op = ('&&' | '<' | '+' | '-' | '*')
 
-  c_comment = '/*' Any* '*/';
-  c_line_comment = Shortest '//' Any* (eol | End);
+        c_comment = '/*' any* '*/';
+        c_line_comment = Shortest '//' Any* (eol | End);
 
-  Precedence
-    zero > identifier;
-    zero > number;
+    Precedence
+        zero > identifier;
+        zero > number;
 
-  Token
-    zero, 'if', 'else', 'while', identifier, number, ip_address, hex;
+    Tokens
+        zero, 'if', 'else', 'while', identifier, number, ip_address, hex;
 
-  Ignored
-    c_comment, c_line_comment, ' ', tab, eol;
+    Ignored
+        c_comment, c_line_comment, ' ', tab, eol;
+
+/*vim:sw=2:ts=2:et*/
