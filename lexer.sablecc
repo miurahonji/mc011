@@ -1,0 +1,32 @@
+Grammar lexer_features:
+
+Lexer
+
+  id = letter (letter | digit | '_')*;
+  decimal = digit+;
+  hex = '0x' hex_digit+;
+  zero = '0'+ | 'zero';
+
+  letter = upper_case | lower_case;
+  upper_case = 'A'..'Z';
+  lower_case = 'a'..'z';
+  digit = '0'..'9';
+  hex_digit = 'a'..'f' | 'A'..'F' | digit;
+
+  ip_address = (number Separator '.')^4;
+
+  c_comment = Shortest '/*' Any* '*/';
+  c_line_comment = Shortest '//' Any* (eol | End);
+
+  tab = #9;
+  eol = #xD | #xA | #xD #xA;
+
+  Precedence
+    zero > identifier;
+    zero > number;
+
+  Token
+    zero, 'if', 'else', 'while', identifier, number, ip_address, hex;
+
+  Ignored
+    c_comment, c_line_comment, ' ', tab, eol;
