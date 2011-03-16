@@ -13,8 +13,11 @@ Lexer
 	integer_literal = digit+;
 	op = ('&&' | '<' | '+' | '-' | '*');
 
-	c_comment = '/*' any* '*/';
+	c_comment = '/*' Any* '*/';
 	c_line_comment = Shortest '//' Any* (eol | End);
+
+    Ignored
+        c_comment, c_line_comment, ' ', tab, eol;
 
     /*Precedence
         zero > identifier;
@@ -23,8 +26,6 @@ Lexer
     Tokens
         zero, 'if', 'else', 'while', identifier, number, ip_address, hex;
 
-    Ignored
-        c_comment, c_line_comment, ' ', tab, eol;
 	*/
 
 /*vim:sw=2:ts=2:et*/
