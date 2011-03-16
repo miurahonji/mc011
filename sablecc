@@ -1,4 +1,0 @@
-#!/bin/bash
-# -*- encoding: utf-8 -*-
-
-java -jar sablecc-3.2/lib/sablecc.jar $*
