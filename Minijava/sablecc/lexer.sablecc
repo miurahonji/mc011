@@ -1,27 +1,38 @@
-Language lexer;
+Package Minijava;
 
-Lexer
-	upper_case = 'A'..'Z';
-	lower_case = 'a'..'z';
+Helpers
+	upper_case = ['A'..'Z'];
+	lower_case = ['a'..'z'];
 	letter = upper_case | lower_case;
-	digit = '0'..'9';
+	digit = ['0'..'9'];
 
+	tab = 9;
+	cr = 13;
+	lf = 10;
+	space = ' ';
+	eol = cr | lf | cr lf;
+
+	unicode_input_character = [0..0xffff];
+	input_character = [unicode_input_character - [cr + lf]];
+	not_star =    [input_character - '*'] | eol;
+	not_star_not_slash = [input_character - ['*' + '/']] | eol;
+
+Tokens
 	id = letter (letter | digit | '_')*;
 	integer_literal = digit+;
 	op = ('&&' | '<' | '+' | '-' | '*');
+	if = 'if';
+	else = 'else';
+	while = 'while';
 
-	tab = #9;
-	eol = #13 | #10 | #13 #10;
-	space = ' ';
 
-	c_comment = '/*' Any* '*/';
-	c_line_comment = Shortest '//' Any* eol;
+	c_comment = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
+	/* c_comment = '/*' not_star* '*;*/
+	/*c_line_comment = Shortest '//' Any* eol;*/
+	c_line_comment = '//' input_character* eol?;
 
-	Token
-		'if', 'else', 'while', id, integer_literal, op;
-
-	Ignored
-		c_comment, c_line_comment, space, tab, eol;
+Ignored Tokens
+	c_comment, c_line_comment, space, tab, eol;
 
 
 /*vim:sw=2:ts=2:et*/

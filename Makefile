@@ -1,2 +1,2 @@
 all:
-	./sablecc Minijava/lexer.sablecc
+	./sablecc Minijava/sablecc/lexer.sablecc
