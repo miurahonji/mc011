@@ -23,12 +23,14 @@ Tokens
 	else = 'else';
 	while = 'while';
 
+	eol = eol;
 	space = ' ';
 	tab = 9;
+
 	c_comment = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
 	c_line_comment = '//' input_character* eol?;
 
 Ignored Tokens
-	c_comment, c_line_comment, space, tab;
+	c_comment, c_line_comment, space, tab, eol;
 
 /*vim:sw=2:ts=2:et*/
