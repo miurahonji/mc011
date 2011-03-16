@@ -16,12 +16,51 @@ Helpers
 	not_star_not_slash = [input_character - ['*' + '/']] | eol;
 
 Tokens
-	id = letter (letter | digit | '_')*;
-	integer_literal = digit+;
-	op = ('&&' | '<' | '+' | '-' | '*');
+    /* definitions */
+    class = 'class';
+    public = 'public';  /* also used for method definition */
+    static = 'static';
+    void = 'void';
+    main = 'main';
+    inherit = 'extends';
+
+    /* operators */
+    amp_amp = '&&';
+    bar_bar = '||';
+    minus = '-';
+    plus = '+';
+    star = '*';  /* also used as a pointer */
+
+    /* types */
+    boolean = 'boolean';
+    int = 'int';
 	if = 'if';
+
+    /* flow control */
 	else = 'else';
 	while = 'while';
+    return = 'return';
+
+    /* other tokens */
+	id = letter (letter | digit | '_')*;
+	integer_literal = digit+;
+    println = 'System.out.println';
+    length = 'length';
+    true = 'true';
+    false = 'false';
+    this = 'this';
+    new = 'new';
+    l_bkt = '[';
+    l_brc = '{';
+    l_par = '(';
+    r_bkt = ']';
+    r_brc = '}';
+    r_par = ')';
+    semi  = ';';
+    comma = ',';
+    dot   = '.';
+    assign = '=';
+    emark = '!';
 
 	eol = eol;
 	space = ' ';
