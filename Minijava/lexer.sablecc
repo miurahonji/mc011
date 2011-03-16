@@ -1,4 +1,4 @@
-Grammar lexer:
+Language lexer;
 
 Lexer
 
@@ -10,8 +10,8 @@ Lexer
   eol = #xD | #xA | #xD #xA;
 
   id = letter (letter | digit | '_')*;
-  INTEGER_LITERAL = digit+;
-  op = ('&&' | '<' | '+' | '-' | '*')
+  integer_literal = digit+;
+  op = ('&&' | '<' | '+' | '-' | '*');
 
   c_comment = '/*' Any* '*/';
   c_line_comment = Shortest '//' Any* (eol | End);
