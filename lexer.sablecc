@@ -13,11 +13,8 @@ Lexer
   INTEGER_LITERAL = digit+;
   op = ('&&' | '<' | '+' | '-' | '*')
 
-  ip_address = (number Separator '.')^4;
-
   c_comment = '/*' Any* '*/';
   c_line_comment = Shortest '//' Any* (eol | End);
-
 
   Precedence
     zero > identifier;
