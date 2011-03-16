@@ -7,14 +7,14 @@ Lexer
 	letter = upper_case | lower_case;
 	digit = '0'..'9';
 	tab = #9;
-	eol = #xD | #xA | #xD #xA;
+	eol = #13 | #10 | #13 #10;
 
 	id = letter (letter | digit | '_')*;
 	integer_literal = digit+;
 	op = ('&&' | '<' | '+' | '-' | '*');
 
 	c_comment = '/*' Any* '*/';
-	c_line_comment = Shortest '//' Any* (eol | End);
+	c_line_comment = Shortest '//' Any* eol;
 
     Ignored
         c_comment, c_line_comment, ' ', tab, eol;
