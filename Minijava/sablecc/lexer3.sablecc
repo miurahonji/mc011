@@ -6,10 +6,8 @@ Helpers
 	letter = upper_case | lower_case;
 	digit = ['0'..'9'];
 
-	tab = 9;
 	cr = 13;
 	lf = 10;
-	space = ' ';
 	eol = cr | lf | cr lf;
 
 	unicode_input_character = [0..0xffff];
@@ -25,14 +23,12 @@ Tokens
 	else = 'else';
 	while = 'while';
 
-
+	space = ' ';
+	tab = 9;
 	c_comment = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
-	/* c_comment = '/*' not_star* '*;*/
-	/*c_line_comment = Shortest '//' Any* eol;*/
 	c_line_comment = '//' input_character* eol?;
 
 Ignored Tokens
-	c_comment, c_line_comment, space, tab, eol;
-
+	c_comment, c_line_comment, space, tab;
 
 /*vim:sw=2:ts=2:et*/
