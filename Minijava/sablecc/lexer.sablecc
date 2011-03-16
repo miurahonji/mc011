@@ -1,31 +1,27 @@
 Language lexer;
 
 Lexer
-
 	upper_case = 'A'..'Z';
 	lower_case = 'a'..'z';
 	letter = upper_case | lower_case;
 	digit = '0'..'9';
-	tab = #9;
-	eol = #13 | #10 | #13 #10;
 
 	id = letter (letter | digit | '_')*;
 	integer_literal = digit+;
 	op = ('&&' | '<' | '+' | '-' | '*');
 
+	tab = #9;
+	eol = #13 | #10 | #13 #10;
+	space = ' ';
+
 	c_comment = '/*' Any* '*/';
 	c_line_comment = Shortest '//' Any* eol;
 
-    Ignored
-        c_comment, c_line_comment, ' ', tab, eol;
+	Token
+		'if', 'else', 'while', id, integer_literal, op;
 
-    /*Precedence
-        zero > identifier;
-        zero > number;
+	Ignored
+		c_comment, c_line_comment, space, tab, eol;
 
-    Tokens
-        zero, 'if', 'else', 'while', identifier, number, ip_address, hex;
-
-	*/
 
 /*vim:sw=2:ts=2:et*/
