@@ -17,12 +17,11 @@ Helpers
 
 Tokens
     /* definitions */
-    class = 'class';
-    public = 'public';  /* also used for method definition */
-    static = 'static';
-    void = 'void';
-    main = 'main';
-    inherit = 'extends';
+    tok_class = 'class';
+    tok_public = 'public';  /* also used for method definition */
+    tok_static = 'static';
+    tok_main = 'main';
+    tok_extends = 'extends';
 
     /* operators */
     amp_amp = '&&';
@@ -34,9 +33,11 @@ Tokens
     /* types */
     boolean = 'boolean';
     int = 'int';
-	if = 'if';
+	string = 'String';
+    void = 'void';
 
     /* flow control */
+	if = 'if';
 	else = 'else';
 	while = 'while';
     return = 'return';
@@ -72,4 +73,91 @@ Tokens
 Ignored Tokens
 	c_comment, c_line_comment, space, tab, eol;
 
+Productions
+	prog = main_class class_decl;
+
+	main_class = 
+		tok_class [name]:id [main_l_brc]:l_brc 
+			tok_public tok_static void tok_main l_par
+				string [main]:l_bkt r_bkt [args]:id
+			r_par [statement_l_brc]:l_brc
+				statement
+			[statement_r_brc]:r_brc 
+		[main_r_brc]:r_brc;
+
+	class_decl =
+		{simple_class} tok_class [name]:id l_brc 
+			var_decl*
+			method_decl*
+		r_brc | 
+
+		{ext_class} tok_class [name]:id tok_extends [super]:id l_brc 
+			var_decl*
+			method_decl*
+		r_brc;
+
+	var_decl = type id semi;
+
+	method_decl = 
+		tok_public type [name]:id l_par
+			arg_list
+		r_par l_brc
+			var_decl*
+			statement 
+			return exp semi
+		r_brc;
+
+	arg_list = 
+		{void} |
+		{one_more} type id arg_rest*;
+
+	arg_rest = comma type id;
+
+	type = 
+		{int_vector} int l_bkt r_bkt |
+		{int} int |
+		{boolean} boolean |
+		{string} string |
+		{void} void |
+		{id} id;
+
+	statement = 
+		/* can not be void */
+		{brc} l_brc statement r_brc |
+		{if} if l_par exp r_par [true]:statement else [false]:statement | 
+		{while} while l_par exp r_par statement |
+		{print} println l_par exp r_par semi |
+		{assign} id assign exp semi |
+		{assign_vector} id l_bkt [index]:exp r_bkt assign [value]:exp semi;
+
+	op = 
+		{and} amp_amp |
+		{or} bar_bar |
+		{minus} minus |
+		{plus} plus |
+		{times} star;
+
+	exp = 
+		{op} [left]:exp op [right]:exp |
+		{value_vector} [id]:exp l_bkt [index]:exp r_bkt |
+		{length} exp dot length |
+		{call} exp dot id l_par exp_list r_par |
+		{integer} integer_literal |
+		{true} true |
+		{false} false |
+		{id} id |
+		{this} this |
+		{new_vector} new int l_bkt exp r_bkt |
+		{new_instance} new id l_par r_par |
+		{not} emark exp |
+		{exp_par} l_par exp r_par;
+
+	exp_list = exp exp_rest*;
+
+	exp_rest = comma exp;
+
+		
+	
+
+	
 /*vim:sw=2:ts=2:et*/
