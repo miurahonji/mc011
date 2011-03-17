@@ -99,11 +99,10 @@ Productions
 	var_decl = type id semi;
 
 	method_decl = 
-		tok_public type [name]:id l_par
-			arg_list
-		r_par l_brc
+		tok_public type [name]:id l_par arg_list r_par
+		l_brc
 			var_decl*
-			statement 
+			statement*
 			return exp semi
 		r_brc;
 
