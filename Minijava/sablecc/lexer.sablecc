@@ -133,7 +133,7 @@ Productions
 	exp = 
 		{plus} [left]:exp plus [right]:star_term |
 		{minus} [left]:exp minus [right]:star_term |
-		{term} star_term |
+		{star_term} star_term |
 		{value_vector} [id]:exp l_bkt [index]:exp r_bkt |
 		{length} exp dot length |
 		{call} exp dot id l_par exp_list r_par |
@@ -142,12 +142,12 @@ Productions
 
 	star_term = 
 		{times} [left]:star_term star [right]:log_term |
-		{term} log_term;
+		{log_term} log_term;
 
 	log_term =
 		{and} [left]:log_term amp_amp [right]:not_term|
 		{or} [left]:log_term bar_bar [right]:not_term |
-		{term} not_term;
+		{not_term} not_term;
 
 	not_term = 
 		{not} emark not_term |
