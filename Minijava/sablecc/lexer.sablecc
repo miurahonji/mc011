@@ -78,13 +78,13 @@ Productions
 
 	main_class = 
 		tok_class [name]:id 
-		[main_l_brc]:l_brc 
+		[class_l_brc]:l_brc 
 			tok_public tok_static void tok_main 
 					l_par string l_bkt r_bkt [args]:id r_par
-			[main_l_brc]:l_brc
+			[function_l_brc]:l_brc
 				statement*
-			[main_r_brc]:r_brc 
-		[main_r_brc]:r_brc;
+			[function_r_brc]:r_brc 
+		[class_r_brc]:r_brc;
 
 	class_decl =
 		{simple_class} tok_class [name]:id
