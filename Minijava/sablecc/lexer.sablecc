@@ -86,12 +86,14 @@ Productions
 		[main_r_brc]:r_brc;
 
 	class_decl =
-		{simple_class} tok_class [name]:id l_brc 
+		{simple_class} tok_class [name]:id
+		l_brc 
 			var_decl*
 			method_decl*
 		r_brc | 
 
-		{ext_class} tok_class [name]:id tok_extends [super]:id l_brc 
+		{ext_class} tok_class [name]:id tok_extends [super]:id
+		l_brc 
 			var_decl*
 			method_decl*
 		r_brc;
