@@ -130,34 +130,39 @@ Productions
 		{assign} id assign exp semi |
 		{assign_vector} id l_bkt [index]:exp r_bkt assign [value]:exp semi;
 
-	op = 
-		{and} amp_amp |
-		{or} bar_bar |
-		{minus} minus |
-		{plus} plus |
-		{times} star;
-
 	exp = 
-		{op} [left]:exp op [right]:exp |
+		{plus} [left]:exp plus [right]:star_term |
+		{minus} [left]:exp minus [right]:star_term |
+		{term} star_term |
 		{value_vector} [id]:exp l_bkt [index]:exp r_bkt |
 		{length} exp dot length |
 		{call} exp dot id l_par exp_list r_par |
-		{integer} integer_literal |
-		{true} true |
-		{false} false |
+		{new_vector} new int l_bkt exp r_bkt |
+		{new_instance} new id l_par r_par;
+
+	star_term = 
+		{times} [left]:star_term star [right]:log_term |
+		{term} log_term;
+
+	log_term =
+		{and} [left]:log_term amp_amp [right]:not_term|
+		{or} [left]:log_term bar_bar [right]:not_term |
+		{term} not_term;
+
+	not_term = 
+		{not} emark not_term |
+		{factor} factor;
+
+	factor = 
 		{id} id |
 		{this} this |
-		{new_vector} new int l_bkt exp r_bkt |
-		{new_instance} new id l_par r_par |
-		{not} emark exp |
+		{true} true |
+		{false} false |
+		{integer} integer_literal |
 		{exp_par} l_par exp r_par;
 
 	exp_list = exp exp_rest*;
 
 	exp_rest = comma exp;
-
-		
-	
-
 	
 /*vim:sw=2:ts=2:et*/
