@@ -43,14 +43,14 @@ Tokens
     return = 'return';
 
     /* other tokens */
-	id = letter (letter | digit | '_')*;
-	integer_literal = digit+;
     println = 'System.out.println';
     length = 'length';
     true = 'true';
     false = 'false';
     this = 'this';
     tok_new = 'new';
+    id = letter (letter | digit | '_')*;
+    integer_literal = digit+;
     l_bkt = '[';
     l_brc = '{';
     l_par = '(';
