@@ -146,8 +146,6 @@ Productions
 		/* can not be void */
 		{brc} l_brc statement+ r_brc
 			{-> New statement.brc([statement.statement])} | 
-		{if} if l_par exp r_par [true]:statement else [false]:statement
-			{-> New statement.if(exp.exp, true.statement, false.statement)} | 
 		{while} while l_par exp r_par statement
 			{-> New statement.while(exp.exp, statement.statement)} | 
 		{print} println l_par exp? r_par semi
@@ -155,7 +153,13 @@ Productions
 		{assign} id assign exp semi
 			{-> New statement.assign(id, exp.exp)} | 
 		{assign_vector} id l_bkt [index]:exp r_bkt assign [value]:exp semi
-			{-> New statement.assign_vector(id, index.exp, value.exp)};
+			{-> New statement.assign_vector(id, index.exp, value.exp)} |
+		{if} if l_par exp r_par [true]:statement ifelse?
+			{-> New statement.if(exp.exp, true.statement, ifelse.statement)};
+
+	ifelse {-> statement} =
+		{ifelse} else [false]:statement
+			{-> false.statement};
 
 	exp {-> exp} = 
 		{plus} [left]:exp plus [right]:star_term 
@@ -231,7 +235,7 @@ Abstract Syntax Tree
 		{void} void |
 		{id} id;
 	statement = {brc} statement+ |
-		{if} exp [true]:statement [false]:statement |
+		{if} exp [true]:statement [false]:statement? |
 		{while} exp statement |
 		{print} exp? |
 		{assign} id exp |
