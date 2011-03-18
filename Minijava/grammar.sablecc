@@ -50,7 +50,7 @@ Tokens
     true = 'true';
     false = 'false';
     this = 'this';
-    new = 'new';
+    tok_new = 'new';
     l_bkt = '[';
     l_brc = '{';
     l_par = '(';
@@ -168,11 +168,11 @@ Productions
 			{-> New exp.value_vector(id.exp, index.exp)} |
 		{length} exp dot length
 			{-> New exp.length(exp.exp)} |
-		{call} exp dot id l_par exp_list r_par
-			{-> New exp.call(exp.exp, id, [exp_list])} |
-		{new_vector} new int l_bkt exp r_bkt
+		{call} exp dot id l_par exp_list? r_par
+			{-> New exp.call(exp.exp, id, exp_list.exp_list)} |
+		{new_vector} tok_new int l_bkt exp r_bkt
 			{-> New exp.new_vector(exp)} |
-		{new_instance} new id l_par r_par
+		{new_instance} tok_new id l_par r_par
 			{-> New exp.new_instance(id)};
 
 	star_term {-> exp} = 
@@ -222,8 +222,7 @@ Abstract Syntax Tree
 		{ext_class} [name]:id [super]:id var_decl* method_decl*;
 	var_decl = type id;
 	method_decl = type [name]:id arg_list? var_decl* statement* exp;
-	arg_list = {void} |
-		{one_more} type id arg_list* |
+	arg_list = {one_more} type id arg_list* |
 		{arg_rest} type id;
 	type = {int_vector} int |
 		{int} int |
@@ -241,7 +240,7 @@ Abstract Syntax Tree
 		{minus} [left]:exp [right]:exp |
 		{value_vector} [id]:exp [index]:exp |
 		{length} exp |
-		{call} exp id exp_list* |
+		{call} exp id exp_list? |
 		{new_vector} exp |
 		{new_instance} id |
 		{times} [left]:exp [right]:exp |

@@ -10,7 +10,7 @@ class m
 class a
 {
    a a;
-   new a().i();
+   new a();
    public a a(){a = new a(); return this;}
    public int i(){ return 0; }
 }
