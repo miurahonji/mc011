@@ -111,7 +111,7 @@ Productions
 		{-> New var_decl(type.type, id)};
 
 	method_decl {-> method_decl} = 
-		tok_public type [name]:id l_par arg_list r_par
+		tok_public type [name]:id l_par arg_list? r_par
 		l_brc
 			var_decl*
 			statement*
@@ -122,9 +122,7 @@ Productions
 				[statement.statement], exp.exp
 			)};
 
-	arg_list {-> arg_list} = 
-		{void} {-> New arg_list.void(Null)}|
-		{one_more} type id arg_rest*
+	arg_list {-> arg_list} = {one_more} type id arg_rest*
 			{-> New arg_list.one_more(type.type, id, [arg_rest.arg_list])};
 
 	arg_rest {-> arg_list} = comma type id
@@ -199,15 +197,15 @@ Productions
 
 	factor {-> exp} = 
 		{id} id
-			{-> id} |
+			{-> New exp.id(id)} |
 		{this} this
-			{-> this} |
+			{-> New exp.this(this)} |
 		{true} true
-			{-> true} |
+			{-> New exp.true(true)} |
 		{false} false
-			{-> false} |
+			{-> New exp.false(false)} |
 		{integer} integer_literal
-			{-> integer_literal} |
+			{-> New exp.integer(integer_literal)} |
 		{exp_par} l_par exp r_par
 			{-> exp.exp};
 
@@ -223,7 +221,7 @@ Abstract Syntax Tree
 	class_decl = {simple_class} [name]:id var_decl* method_decl* |
 		{ext_class} [name]:id [super]:id var_decl* method_decl*;
 	var_decl = type id;
-	method_decl = [name]:id arg_list var_decl* statement* exp;
+	method_decl = [name]:id arg_list? var_decl* statement* exp;
 	arg_list = {void} |
 		{one_more} type id arg_list* |
 		{arg_rest} type id;
@@ -249,7 +247,12 @@ Abstract Syntax Tree
 		{times} [left]:exp [right]:exp |
 		{and} [left]:exp [right]:exp |
 		{or} [left]:exp [right]:exp |
-		{not} exp;
+		{not} exp |
+		{id} id |
+		{this} this |
+		{true} true |
+		{false} false |
+		{integer} integer_literal;
 	exp_list = {exp_list} exp exp_list* |
 		{exp_rest} exp;
 
