@@ -150,7 +150,7 @@ Productions
 			{-> New statement.if(exp.exp, true.statement, false.statement)} | 
 		{while} while l_par exp r_par statement
 			{-> New statement.while(exp.exp, statement.statement)} | 
-		{print} println l_par exp r_par semi
+		{print} println l_par exp? r_par semi
 			{-> New statement.print(exp.exp)} | 
 		{assign} id assign exp semi
 			{-> New statement.assign(id, exp.exp)} | 
@@ -234,7 +234,7 @@ Abstract Syntax Tree
 	statement = {brc} statement+ |
 		{if} exp [true]:statement [false]:statement |
 		{while} exp statement |
-		{print} exp |
+		{print} exp? |
 		{assign} id exp |
 		{assign_vector} id [index]:exp [value]:exp;
 	exp = {plus} [left]:exp [right]:exp |

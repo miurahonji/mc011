@@ -3,13 +3,14 @@ class m
 {
    public static void main(String[] args)
    {
-      System.out.println(new a().i());
+      System.out.println();
    }
 }
 
 class a
 {
    a a;
+   new a().i();
    public a a(){a = new a(); return this;}
    public int i(){ return 0; }
 }
