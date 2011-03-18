@@ -74,9 +74,10 @@ Ignored Tokens
 	c_comment, c_line_comment, space, tab, eol;
 
 Productions
-	prog = main_class class_decl;
+	prog {-> prog} = main_class class_decl*
+		{-> New prog(main_class.main_class, [class_decl.class_decl])};
 
-	main_class = 
+	main_class {-> main_class} = 
 		tok_class [name]:id 
 		[class_l_brc]:l_brc 
 			tok_public tok_static void tok_main 
@@ -84,87 +85,172 @@ Productions
 			[function_l_brc]:l_brc
 				statement*
 			[function_r_brc]:r_brc 
-		[class_r_brc]:r_brc;
+		[class_r_brc]:r_brc 
+			{-> New main_class(name, args, [statement.statement])} ;
 
-	class_decl =
+	class_decl {-> class_decl} =
 		{simple_class} tok_class [name]:id
 		l_brc 
 			var_decl*
 			method_decl*
-		r_brc | 
+		r_brc 
+			{-> New class_decl.simple_class(
+				name, [var_decl.var_decl], [method_decl.method_decl]
+			)} | 
 
 		{ext_class} tok_class [name]:id tok_extends [super]:id
 		l_brc 
 			var_decl*
 			method_decl*
-		r_brc;
+		r_brc
+			{-> New class_decl.ext_class(
+				name, super, [var_decl.var_decl], [method_decl.method_decl]
+			)};
 
-	var_decl = type id semi;
+	var_decl {-> var_decl} = type id semi
+		{-> New var_decl(type.type, id)};
 
-	method_decl = 
+	method_decl {-> method_decl} = 
 		tok_public type [name]:id l_par arg_list r_par
 		l_brc
 			var_decl*
 			statement*
 			return exp semi
-		r_brc;
+		r_brc
+			{-> New method_decl(
+				name, arg_list.arg_list, [var_decl.var_decl],
+				[statement.statement], exp.exp
+			)};
 
-	arg_list = 
-		{void} |
-		{one_more} type id arg_rest*;
+	arg_list {-> arg_list} = 
+		{void} {-> New arg_list.void(Null)}|
+		{one_more} type id arg_rest*
+			{-> New arg_list.one_more(type.type, id, [arg_rest.arg_list])};
 
-	arg_rest = comma type id;
+	arg_rest {-> arg_list} = comma type id
+		{-> New arg_list.arg_rest(type.type, id)};
 
-	type = 
-		{int_vector} int l_bkt r_bkt |
+	type {-> type} = 
+		{int_vector} int l_bkt r_bkt 
+			{-> New type.int_vector(int)} |
+		{int} int
+			{-> New type.int(int)} |
+		{boolean} boolean
+			{-> New type.boolean(boolean)} |
+		{string} string
+			{-> New type.string(string)} |
+		{void} void
+			{-> New type.void(void)} |
+		{id} id
+			{-> New type.id(id)};
+
+	statement {-> statement} = 
+		/* can not be void */
+		{brc} l_brc statement* r_brc
+			{-> New statement.brc([statement.statement])} | 
+		{if} if l_par exp r_par [true]:statement* else [false]:statement*
+			{-> New statement.if(exp.exp, [true.statement], [false.statement])} | 
+		{while} while l_par exp r_par statement*
+			{-> New statement.while(exp.exp, [statement.statement])} | 
+		{print} println l_par exp r_par semi
+			{-> New statement.print(exp.exp)} | 
+		{assign} id assign exp semi
+			{-> New statement.assign(id, exp.exp)} | 
+		{assign_vector} id l_bkt [index]:exp r_bkt assign [value]:exp semi
+			{-> New statement.assign_vector(id, index.exp, value.exp)};
+
+	exp {-> exp} = 
+		{plus} [left]:exp plus [right]:star_term 
+			{-> New exp.plus(left.exp, right.exp)} |
+		{minus} [left]:exp minus [right]:star_term
+			{-> New exp.minus(left.exp, right.exp)} |
+		{star_term} star_term
+			{-> star_term.exp} |
+		{value_vector} [id]:exp l_bkt [index]:exp r_bkt
+			{-> New exp.value_vector(id.exp, index.exp)} |
+		{length} exp dot length
+			{-> New exp.length(exp.exp)} |
+		{call} exp dot id l_par exp_list r_par
+			{-> New exp.call(exp.exp, id, [exp_list])} |
+		{new_vector} new int l_bkt exp r_bkt
+			{-> New exp.new_vector(exp)} |
+		{new_instance} new id l_par r_par
+			{-> New exp.new_instance(id)};
+
+	star_term {-> exp} = 
+		{times} [left]:star_term star [right]:log_term
+			{-> New exp.times(left.exp, right.exp)} |
+		{log_term} log_term
+			{-> log_term.exp};
+
+	log_term {-> exp} =
+		{and} [left]:log_term amp_amp [right]:not_term
+			{-> New exp.and(left.exp, right.exp)} |
+		{or} [left]:log_term bar_bar [right]:not_term
+			{-> New exp.or(left.exp, right.exp)} |
+		{not_term} not_term
+			{-> not_term.exp};
+
+	not_term {-> exp} = 
+		{not} emark not_term
+			{-> New exp.not(not_term.exp)} |
+		{factor} factor
+			{-> factor.exp};
+
+	factor {-> exp} = 
+		{id} id
+			{-> id} |
+		{this} this
+			{-> this} |
+		{true} true
+			{-> true} |
+		{false} false
+			{-> false} |
+		{integer} integer_literal
+			{-> integer_literal} |
+		{exp_par} l_par exp r_par
+			{-> exp.exp};
+
+	exp_list {-> exp_list} = exp exp_rest*
+		{-> New exp_list.exp_list(exp.exp, [exp_rest.exp_list])};
+
+	exp_rest {-> exp_list} = comma exp
+		{-> New exp_list.exp_rest(exp.exp)};
+	
+Abstract Syntax Tree
+	prog = main_class class_decl*;
+	main_class = [name]:id [args]:id statement*;
+	class_decl = {simple_class} [name]:id var_decl* method_decl* |
+		{ext_class} [name]:id [super]:id var_decl* method_decl*;
+	var_decl = type id;
+	method_decl = [name]:id arg_list var_decl* statement* exp;
+	arg_list = {void} |
+		{one_more} type id arg_list* |
+		{arg_rest} type id;
+	type = {int_vector} int |
 		{int} int |
 		{boolean} boolean |
 		{string} string |
 		{void} void |
 		{id} id;
+	statement = {brc} statement* |
+		{if} exp [true]:statement* [false]:statement* |
+		{while} exp statement* |
+		{print} exp |
+		{assign} id exp |
+		{assign_vector} id [index]:exp [value]:exp;
+	exp = {plus} [left]:exp [right]:exp |
+		{minus} [left]:exp [right]:exp |
+		{value_vector} [id]:exp [index]:exp |
+		{length} exp |
+		{call} exp id exp_list* |
+		{new_vector} exp |
+		{new_instance} id |
+		{times} [left]:exp [right]:exp |
+		{and} [left]:exp [right]:exp |
+		{or} [left]:exp [right]:exp |
+		{not} exp;
+	exp_list = {exp_list} exp exp_list* |
+		{exp_rest} exp;
 
-	statement = 
-		/* can not be void */
-		{brc} l_brc statement r_brc |
-		{if} if l_par exp r_par [true]:statement else [false]:statement | 
-		{while} while l_par exp r_par statement |
-		{print} println l_par exp r_par semi |
-		{assign} id assign exp semi |
-		{assign_vector} id l_bkt [index]:exp r_bkt assign [value]:exp semi;
-
-	exp = 
-		{plus} [left]:exp plus [right]:star_term |
-		{minus} [left]:exp minus [right]:star_term |
-		{star_term} star_term |
-		{value_vector} [id]:exp l_bkt [index]:exp r_bkt |
-		{length} exp dot length |
-		{call} exp dot id l_par exp_list r_par |
-		{new_vector} new int l_bkt exp r_bkt |
-		{new_instance} new id l_par r_par;
-
-	star_term = 
-		{times} [left]:star_term star [right]:log_term |
-		{log_term} log_term;
-
-	log_term =
-		{and} [left]:log_term amp_amp [right]:not_term|
-		{or} [left]:log_term bar_bar [right]:not_term |
-		{not_term} not_term;
-
-	not_term = 
-		{not} emark not_term |
-		{factor} factor;
-
-	factor = 
-		{id} id |
-		{this} this |
-		{true} true |
-		{false} false |
-		{integer} integer_literal |
-		{exp_par} l_par exp r_par;
-
-	exp_list = exp exp_rest*;
-
-	exp_rest = comma exp;
-	
 /*vim:sw=2:ts=2:et*/
