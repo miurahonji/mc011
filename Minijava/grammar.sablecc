@@ -118,7 +118,7 @@ Productions
 			return exp semi
 		r_brc
 			{-> New method_decl(
-				name, arg_list.arg_list, [var_decl.var_decl],
+				type, name, arg_list.arg_list, [var_decl.var_decl],
 				[statement.statement], exp.exp
 			)};
 
@@ -221,7 +221,7 @@ Abstract Syntax Tree
 	class_decl = {simple_class} [name]:id var_decl* method_decl* |
 		{ext_class} [name]:id [super]:id var_decl* method_decl*;
 	var_decl = type id;
-	method_decl = [name]:id arg_list? var_decl* statement* exp;
+	method_decl = type [name]:id arg_list? var_decl* statement* exp;
 	arg_list = {void} |
 		{one_more} type id arg_list* |
 		{arg_rest} type id;
