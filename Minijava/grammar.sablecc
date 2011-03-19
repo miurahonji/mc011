@@ -171,10 +171,6 @@ Productions
 		{new_instance} tok_new id l_par r_par
 			{-> New exp.new_instance(id)};
 
-	matrix {-> exp} = 
-		l_bkt exp_cmp r_bkt
-			{-> exp_cmp.exp};
-
 	exp_cmp {-> exp} = 
 		{and} [left]:exp_cmp amp_amp [right]:major_term
 			{-> New exp.and(left.exp, right.exp)} |
@@ -213,18 +209,18 @@ Productions
 
 	exp_method {-> exp} =
 		/* Exp Method */
-		{value_vector} [id]:exp_method l_bkt [index]:exp_method r_bkt
-			{-> New exp.value_vector(id.exp, index.exp)} |
+		{value_vector} [id]:exp_method [index]:matrix+
+			{-> New exp.value_vector(id.exp, [index.exp])} |
 		{length} exp_method dot length
 			{-> New exp.length(exp_method.exp)} |
 		{call}	[obj]:exp_method dot id l_par [args]:exp_list? r_par
 			{-> New exp.call(obj.exp, id, args.exp_list)} |
 		/* Exp Void */
-		{value_vector} [id]:exp_void l_bkt [index]:exp_method r_bkt
-			{-> New exp.value_vector(id.exp, index.exp)} |
-		{length_new} exp_void dot length
+		{value_vector_void} [id]:exp_void [index]:matrix+
+			{-> New exp.value_vector(id.exp, [index.exp])} |
+		{length_void} exp_void dot length
 			{-> New exp.length(exp_void.exp)} |
-		{call_new}	[obj]:exp_void dot id l_par [args]:exp_list? r_par
+		{call_void}	[obj]:exp_void dot id l_par [args]:exp_list? r_par
 			{-> New exp.call(obj.exp, id, args.exp_list)} |
 		{factor} factor
 			{-> factor.exp};
@@ -242,6 +238,10 @@ Productions
 			{-> New exp.integer(integer_literal)} |
 		{exp_par} l_par exp r_par
 			{-> exp.exp};
+
+	matrix {-> exp} = 
+		l_bkt exp_method r_bkt
+			{-> exp_method.exp};
 
 	exp_list {-> exp_list} = exp exp_rest*
 		{-> New exp_list.exp_list(exp.exp, [exp_rest.exp_list])};
@@ -272,7 +272,7 @@ Abstract Syntax Tree
 		{assign_vector} id [index]:exp [value]:exp;
 	exp = {plus} [left]:exp [right]:exp |
 		{minus} [left]:exp [right]:exp |
-		{value_vector} [id]:exp [index]:exp |
+		{value_vector} [id]:exp [index]:exp+ |
 		{length} exp |
 		{call} exp id exp_list? |
 		{new_vector} exp+ |
