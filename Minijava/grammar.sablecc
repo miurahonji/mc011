@@ -212,12 +212,16 @@ Productions
 			{-> exp_method.exp};
 
 	exp_method {-> exp} =
+		/* Exp Method */
 		{value_vector} [id]:exp_method l_bkt [index]:exp_method r_bkt
 			{-> New exp.value_vector(id.exp, index.exp)} |
 		{length} exp_method dot length
 			{-> New exp.length(exp_method.exp)} |
 		{call}	[obj]:exp_method dot id l_par [args]:exp_list? r_par
 			{-> New exp.call(obj.exp, id, args.exp_list)} |
+		/* Exp Void */
+		{value_vector} [id]:exp_void l_bkt [index]:exp_method r_bkt
+			{-> New exp.value_vector(id.exp, index.exp)} |
 		{length_new} exp_void dot length
 			{-> New exp.length(exp_void.exp)} |
 		{call_new}	[obj]:exp_void dot id l_par [args]:exp_list? r_par
