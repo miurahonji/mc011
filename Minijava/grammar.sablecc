@@ -26,8 +26,8 @@ Tokens
     /* operators */
     amp_amp = '&&';
     bar_bar = '||';
-    minor_op = '<';
-    major_op = '>';
+    less_than_op = '<';
+    greater_than_op = '>';
     minus = '-';
     plus = '+';
     star = '*';  /* also used as a pointer */
@@ -172,18 +172,18 @@ Productions
 			{-> New exp.new_instance(id)};
 
 	exp_cmp {-> exp} = 
-		{and} [left]:exp_cmp amp_amp [right]:major_term
+		{and} [left]:exp_cmp amp_amp [right]:inequation_term
 			{-> New exp.and(left.exp, right.exp)} |
-		{or} [left]:exp_cmp bar_bar [right]:major_term
+		{or} [left]:exp_cmp bar_bar [right]:inequation_term
 			{-> New exp.or(left.exp, right.exp)} |
-		{major_term} major_term
-			{-> major_term.exp};
+		{inequation_term} inequation_term
+			{-> inequation_term.exp};
 
-	major_term {-> exp} =
-		{major} [left]:major_term major_op [right]:plus_term
-			{-> New exp.major(left.exp, right.exp)} |
-		{minor} [left]:major_term minor_op [right]:plus_term
-			{-> New exp.minor(left.exp, right.exp)} |
+	inequation_term {-> exp} =
+		{greater} [left]:inequation_term greater_than_op [right]:plus_term
+			{-> New exp.greater(left.exp, right.exp)} |
+		{less} [left]:inequation_term less_than_op [right]:plus_term
+			{-> New exp.less(left.exp, right.exp)} |
 		{plus_term} plus_term
 			{-> plus_term.exp};
 
@@ -279,8 +279,8 @@ Abstract Syntax Tree
 		{new_instance} id |
 		{times} [left]:exp [right]:exp |
 		{and} [left]:exp [right]:exp |
-		{minor} [left]:exp [right]:exp |
-		{major} [left]:exp [right]:exp |
+		{less} [left]:exp [right]:exp |
+		{greater} [left]:exp [right]:exp |
 		{or} [left]:exp [right]:exp |
 		{not} exp |
 		{id} id |
