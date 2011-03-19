@@ -26,6 +26,8 @@ Tokens
     /* operators */
     amp_amp = '&&';
     bar_bar = '||';
+    minor_op = '<';
+    major_op = '>';
     minus = '-';
     plus = '+';
     star = '*';  /* also used as a pointer */
@@ -154,48 +156,72 @@ Productions
 			{-> New statement.assign(id, exp.exp)} | 
 		{assign_vector} id l_bkt [index]:exp r_bkt assign [value]:exp semi
 			{-> New statement.assign_vector(id, index.exp, value.exp)} |
-		{if} if l_par exp r_par [true]:statement ifelse?
-			{-> New statement.if(exp.exp, true.statement, ifelse.statement)};
+		{if_only} if l_par exp r_par statement
+			{-> New statement.if_only(exp.exp, statement.statement)};
 
-	ifelse {-> statement} =
-		{ifelse} else [false]:statement
-			{-> false.statement};
+	exp {-> exp} =
+		{void} exp_void
+			{-> exp_void.exp} |
+		{cmp} exp_cmp
+			{-> exp_cmp.exp};
 
-	exp {-> exp} = 
-		{plus} [left]:exp plus [right]:star_term 
-			{-> New exp.plus(left.exp, right.exp)} |
-		{minus} [left]:exp minus [right]:star_term
-			{-> New exp.minus(left.exp, right.exp)} |
-		{star_term} star_term
-			{-> star_term.exp} |
-		{value_vector} [id]:exp l_bkt [index]:exp r_bkt
-			{-> New exp.value_vector(id.exp, index.exp)} |
-		{length} exp dot length
-			{-> New exp.length(exp.exp)} |
-		{call} exp dot id l_par exp_list? r_par
-			{-> New exp.call(exp.exp, id, exp_list.exp_list)} |
-		{new_vector} tok_new int l_bkt exp r_bkt
-			{-> New exp.new_vector(exp)} |
+	exp_void {-> exp} =
+		{new_vector} tok_new int matrix+
+			{-> New exp.new_vector([matrix.exp])} |
 		{new_instance} tok_new id l_par r_par
 			{-> New exp.new_instance(id)};
 
-	star_term {-> exp} = 
-		{times} [left]:star_term star [right]:log_term
-			{-> New exp.times(left.exp, right.exp)} |
-		{log_term} log_term
-			{-> log_term.exp};
+	matrix {-> exp} = 
+		l_bkt exp_cmp r_bkt
+			{-> exp_cmp.exp};
 
-	log_term {-> exp} =
-		{and} [left]:log_term amp_amp [right]:not_term
+	exp_cmp {-> exp} = 
+		{and} [left]:exp_cmp amp_amp [right]:major_term
 			{-> New exp.and(left.exp, right.exp)} |
-		{or} [left]:log_term bar_bar [right]:not_term
+		{or} [left]:exp_cmp bar_bar [right]:major_term
 			{-> New exp.or(left.exp, right.exp)} |
+		{major_term} major_term
+			{-> major_term.exp};
+
+	major_term {-> exp} =
+		{major} [left]:major_term major_op [right]:plus_term
+			{-> New exp.major(left.exp, right.exp)} |
+		{minor} [left]:major_term minor_op [right]:plus_term
+			{-> New exp.minor(left.exp, right.exp)} |
+		{plus_term} plus_term
+			{-> plus_term.exp};
+
+	plus_term {-> exp} =
+		{plus} [left]:plus_term plus [right]:times_term 
+			{-> New exp.plus(left.exp, right.exp)} |
+		{minus} [left]:plus_term minus [right]:times_term
+			{-> New exp.minus(left.exp, right.exp)} |
+		{times_term} times_term 
+			{-> times_term.exp};
+
+	times_term {-> exp} = 
+		{times} [left]:times_term star [right]:not_term
+			{-> New exp.times(left.exp, right.exp)} |
 		{not_term} not_term
 			{-> not_term.exp};
 
 	not_term {-> exp} = 
 		{not} emark not_term
 			{-> New exp.not(not_term.exp)} |
+		{exp_method} exp_method
+			{-> exp_method.exp};
+
+	exp_method {-> exp} =
+		{value_vector} [id]:exp_method l_bkt [index]:exp_method r_bkt
+			{-> New exp.value_vector(id.exp, index.exp)} |
+		{length} exp_method dot length
+			{-> New exp.length(exp_method.exp)} |
+		{call}	[obj]:exp_method dot id l_par [args]:exp_list? r_par
+			{-> New exp.call(obj.exp, id, args.exp_list)} |
+		{length_new} exp_void dot length
+			{-> New exp.length(exp_void.exp)} |
+		{call_new}	[obj]:exp_void dot id l_par [args]:exp_list? r_par
+			{-> New exp.call(obj.exp, id, args.exp_list)} |
 		{factor} factor
 			{-> factor.exp};
 
@@ -235,7 +261,7 @@ Abstract Syntax Tree
 		{void} void |
 		{id} id;
 	statement = {brc} statement+ |
-		{if} exp [true]:statement [false]:statement? |
+		{if_only} exp statement |
 		{while} exp statement |
 		{print} exp? |
 		{assign} id exp |
@@ -245,10 +271,12 @@ Abstract Syntax Tree
 		{value_vector} [id]:exp [index]:exp |
 		{length} exp |
 		{call} exp id exp_list? |
-		{new_vector} exp |
+		{new_vector} exp+ |
 		{new_instance} id |
 		{times} [left]:exp [right]:exp |
 		{and} [left]:exp [right]:exp |
+		{minor} [left]:exp [right]:exp |
+		{major} [left]:exp [right]:exp |
 		{or} [left]:exp [right]:exp |
 		{not} exp |
 		{id} id |
