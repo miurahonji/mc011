@@ -144,6 +144,7 @@ Productions
 		{id} id
 			{-> New type.id(id)};
 
+	/* treating ifs */
 	statement {-> statement} = 
 		/* can not be void */
 		{brc} l_brc statement+ r_brc
@@ -156,18 +157,38 @@ Productions
 			{-> New statement.assign(id, exp.exp)} | 
 		{assign_vector} id l_bkt [index]:exp r_bkt assign [value]:exp semi
 			{-> New statement.assign_vector(id, index.exp, value.exp)} |
+	/*
+	 * always bind the ELSE to the last IF defined, so
+	 *    if (X)  if (Y) S1  else S2
+	 * is the same as:
+	 *    if (X) {if (Y) S1  else S2}
+	 * and NOT the same as:
+	 *    if (X) {if (Y) S1} else S2
+	 *
+	 * from http://www.devincook.com/goldparser/doc/grammars/example-if-then-else.htm
+	 */
 		{if_only} if l_par exp r_par statement
-			{-> New statement.if_only(exp.exp, statement.statement)};
+			{-> New statement.if_only(exp.exp, statement.statement)} |
+		{if_else} if l_par exp r_par [true]:if_else_stm else [false]:statement
+			{-> New statement.if_else(exp.exp, true.statement, false.statement)};
+
+	if_else_stm {-> statement} =
+		{if_else} if l_par exp r_par [true]:if_else_stm else [false]:if_else_stm
+			{-> New statement.if_else(exp.exp, true.statement, false.statement)};
 
 	exp {-> exp} =
 		{void} exp_void
 			{-> exp_void.exp} |
+		{new} exp_new
+			{-> exp_new.exp} |
 		{cmp} exp_cmp
 			{-> exp_cmp.exp};
 
 	exp_void {-> exp} =
 		{new_vector} tok_new int matrix+
-			{-> New exp.new_vector([matrix.exp])} |
+			{-> New exp.new_vector([matrix.exp])};
+
+	exp_new {-> exp} =
 		{new_instance} tok_new id l_par r_par
 			{-> New exp.new_instance(id)};
 
@@ -204,23 +225,25 @@ Productions
 	not_term {-> exp} = 
 		{not} emark not_term
 			{-> New exp.not(not_term.exp)} |
+		{exp_value} exp_value
+			{-> exp_value.exp};
+
+	exp_value {-> exp} = 
+		{value_vector} [id]:exp_value [index]:matrix
+			{-> New exp.value_vector(id.exp, index.exp)} |
 		{exp_method} exp_method
 			{-> exp_method.exp};
 
 	exp_method {-> exp} =
 		/* Exp Method */
-		{value_vector} [id]:exp_method [index]:matrix+
-			{-> New exp.value_vector(id.exp, [index.exp])} |
 		{length} exp_method dot length
 			{-> New exp.length(exp_method.exp)} |
 		{call}	[obj]:exp_method dot id l_par [args]:exp_list? r_par
 			{-> New exp.call(obj.exp, id, args.exp_list)} |
-		/* Exp Void */
-		{value_vector_void} [id]:exp_void [index]:matrix+
-			{-> New exp.value_vector(id.exp, [index.exp])} |
+		/* Exp New */
 		{length_void} exp_void dot length
 			{-> New exp.length(exp_void.exp)} |
-		{call_void}	[obj]:exp_void dot id l_par [args]:exp_list? r_par
+		{call_new}	[obj]:exp_new dot id l_par [args]:exp_list? r_par
 			{-> New exp.call(obj.exp, id, args.exp_list)} |
 		{factor} factor
 			{-> factor.exp};
@@ -266,13 +289,14 @@ Abstract Syntax Tree
 		{id} id;
 	statement = {brc} statement+ |
 		{if_only} exp statement |
+		{if_else} exp [true]:statement [false]:statement |
 		{while} exp statement |
 		{print} exp? |
 		{assign} id exp |
 		{assign_vector} id [index]:exp [value]:exp;
 	exp = {plus} [left]:exp [right]:exp |
 		{minus} [left]:exp [right]:exp |
-		{value_vector} [id]:exp [index]:exp+ |
+		{value_vector} [id]:exp [index]:exp |
 		{length} exp |
 		{call} exp id exp_list? |
 		{new_vector} exp+ |
