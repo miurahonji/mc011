@@ -1,0 +1,13 @@
+// classe com mesmo nome da classe main
+class m
+{
+    public static void main(String[] args)
+    {
+		if (0)
+			if (1)
+				System.out.println(2);
+			else
+				System.out.println(3);
+    }
+}
+

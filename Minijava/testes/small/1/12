@@ -1,0 +1,18 @@
+// classe com mesmo nome da classe main
+class m
+{
+    public static void main(String[] args)
+    {
+    	// varios statement!?
+    	{
+    		System.out.println(10);
+    	}
+    	{
+    		System.out.println(80);
+    	}
+    }
+}
+
+class m
+{
+}
