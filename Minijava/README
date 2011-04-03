@@ -1,0 +1,25 @@
+<Hashtable> Global:
+	key: <String> class_id
+	value: <ClassData>
+
+<ClassData>:
+	<ClassData*> super
+	<Hashtable> fields:
+		key: <String> id
+		value: <String> type
+	<Hashtable> methods:
+		key: <String> return_type + id + arg_list_type
+		value: <MethodData>
+	==================================================
+	Methods:
+		boolean exists(String return_type + id + arg_list_type)
+			// Verify if function signature exists in class scope, including
+			// super
+
+<MethodData>
+	<ClassData*> parent_class
+	<Hashtable> variables:
+		key: <String> id
+		value: <String> type
+	# Apply all statements
+	return: <String> type
