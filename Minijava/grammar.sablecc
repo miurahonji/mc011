@@ -66,15 +66,14 @@ Tokens
     assign = '=';
     not = '!';
 
-	eol = eol;
-	white_space = ' ';
-	tab = 9;
+    /* ignores tab and all end of line chars */
+	white_space = ' ' | eol | 9;
 
 	block_comment = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
 	line_comment = '//' input_character* eol?;
 
 Ignored Tokens
-	block_comment, line_comment, white_space, tab, eol;
+	block_comment, line_comment, white_space;
 
 Productions
 	prog {-> prog} = main_class class_decl*
