@@ -134,13 +134,13 @@ Productions
 		{array} tok_int l_brack r_brack 
 			{-> New type.array(tok_int)} |
 		{int} tok_int
-			{-> New type.int(tok_int)} |
+			{-> tok_int} |
 		{boolean} tok_boolean
-			{-> New type.boolean(tok_boolean)} |
+			{-> tok_boolean} |
 		{string} tok_string
-			{-> New type.string(tok_string)} |
+			{-> tok_string} |
 		{void} tok_void
-			{-> New type.void(tok_void)} |
+			{-> tok_void} |
 		{object} id
 			{-> New type.object(id)};
 
@@ -285,12 +285,8 @@ Abstract Syntax Tree
 	class_decl = [name]:id [super]:id? var_decl* method_decl*;
 	var_decl = type id;
 	method_decl = type [name]:id formal? var_decl* statement* exp;
-	type = {int_vector} tok_int |
-		{int} tok_int |
-		{boolean} tok_boolean |
-		{string} tok_string |
-		{void} tok_void |
-		{id} id;
+	type = {array} tok_int |
+		{object} id;
 	statement = {block_statement} statement+ |
 		{if} exp [true]:statement [false]:statement? |
 		{while} exp statement |
