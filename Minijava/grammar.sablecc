@@ -1,4 +1,4 @@
-Package Minijava;
+Package minijava;
 
 Helpers
 	upper_case = ['A'..'Z'];
@@ -24,56 +24,57 @@ Tokens
     tok_extends = 'extends';
 
     /* operators */
-    amp_amp = '&&';
-    bar_bar = '||';
-    less_than_op = '<';
-    greater_than_op = '>';
+    and = '&&';
+    eq = '==';
+    lt = '<';
     minus = '-';
     plus = '+';
-    star = '*';  /* also used as a pointer */
+    times = '*';  /* also used as a pointer */
 
     /* types */
-    boolean = 'boolean';
-    int = 'int';
-	string = 'String';
-    void = 'void';
+    tok_boolean = 'boolean';
+    tok_int = 'int';
+	tok_string = 'String';
+    tok_void = 'void';
 
     /* flow control */
-	if = 'if';
-	else = 'else';
-	while = 'while';
-    return = 'return';
+	tok_if = 'if';
+	tok_else = 'else';
+	tok_while = 'while';
+    tok_return = 'return';
 
     /* other tokens */
-    println = 'System.out.println';
-    length = 'length';
-    true = 'true';
-    false = 'false';
-    this = 'this';
+    tok_print = 'System.out.println';
+    tok_length = 'length';
+    tok_true = 'true';
+    tok_false = 'false';
+    tok_this = 'this';
     tok_new = 'new';
+    tok_null = 'null';
+
     id = letter (letter | digit | '_')*;
     integer_literal = digit+;
-    l_bkt = '[';
-    l_brc = '{';
-    l_par = '(';
-    r_bkt = ']';
-    r_brc = '}';
-    r_par = ')';
+    l_brack = '[';
+    l_brace = '{';
+    l_paren = '(';
+    r_brack = ']';
+    r_brace = '}';
+    r_paren = ')';
     semi  = ';';
     comma = ',';
-    dot   = '.';
+    period = '.';
     assign = '=';
-    emark = '!';
+    not = '!';
 
 	eol = eol;
-	space = ' ';
+	white_space = ' ';
 	tab = 9;
 
-	c_comment = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
-	c_line_comment = '//' input_character* eol?;
+	block_comment = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
+	line_comment = '//' input_character* eol?;
 
 Ignored Tokens
-	c_comment, c_line_comment, space, tab, eol;
+	block_comment, line_comment, white_space, tab, eol;
 
 Productions
 	prog {-> prog} = main_class class_decl*
@@ -81,30 +82,30 @@ Productions
 
 	main_class {-> main_class} = 
 		tok_class [name]:id 
-		[class_l_brc]:l_brc 
-			tok_public tok_static void tok_main 
-					l_par string l_bkt r_bkt [args]:id r_par
-			[function_l_brc]:l_brc
+		[class_l_brace]:l_brace 
+			tok_public tok_static tok_void tok_main 
+					l_paren tok_string l_brack r_brack [args]:id r_paren
+			[function_l_brace]:l_brace
 				statement*
-			[function_r_brc]:r_brc 
-		[class_r_brc]:r_brc 
+			[function_r_brace]:r_brace 
+		[class_r_brace]:r_brace 
 			{-> New main_class(name, args, [statement.statement])} ;
 
 	class_decl {-> class_decl} =
 		{simple_class} tok_class [name]:id
-		l_brc 
+		l_brace 
 			var_decl*
 			method_decl*
-		r_brc 
+		r_brace 
 			{-> New class_decl.simple_class(
 				name, [var_decl.var_decl], [method_decl.method_decl]
 			)} | 
 
 		{ext_class} tok_class [name]:id tok_extends [super]:id
-		l_brc 
+		l_brace 
 			var_decl*
 			method_decl*
-		r_brc
+		r_brace
 			{-> New class_decl.ext_class(
 				name, super, [var_decl.var_decl], [method_decl.method_decl]
 			)};
@@ -113,12 +114,12 @@ Productions
 		{-> New var_decl(type.type, id)};
 
 	method_decl {-> method_decl} = 
-		tok_public type [name]:id l_par arg_list? r_par
-		l_brc
+		tok_public type [name]:id l_paren arg_list? r_paren
+		l_brace
 			var_decl*
 			statement*
-			return exp semi
-		r_brc
+			tok_return exp semi
+		r_brace
 			{-> New method_decl(
 				type, name, arg_list.arg_list, [var_decl.var_decl],
 				[statement.statement], exp.exp
@@ -131,16 +132,16 @@ Productions
 		{-> New arg_list.arg_rest(type.type, id)};
 
 	type {-> type} = 
-		{int_vector} int l_bkt r_bkt 
-			{-> New type.int_vector(int)} |
-		{int} int
-			{-> New type.int(int)} |
-		{boolean} boolean
-			{-> New type.boolean(boolean)} |
-		{string} string
-			{-> New type.string(string)} |
-		{void} void
-			{-> New type.void(void)} |
+		{int_vector} tok_int l_brack r_brack 
+			{-> New type.int_vector(tok_int)} |
+		{int} tok_int
+			{-> New type.int(tok_int)} |
+		{boolean} tok_boolean
+			{-> New type.boolean(tok_boolean)} |
+		{string} tok_string
+			{-> New type.string(tok_string)} |
+		{void} tok_void
+			{-> New type.void(tok_void)} |
 		{id} id
 			{-> New type.id(id)};
 
@@ -154,33 +155,33 @@ Productions
 	 *    if (X) {if (Y) S1} else S2
 	 */
 	statement {-> statement} = 
-		{brc} l_brc statement+ r_brc
+		{brc} l_brace statement+ r_brace
 			{-> New statement.brc([statement.statement])} | 
-		{while} while l_par exp r_par statement
+		{while} tok_while l_paren exp r_paren statement
 			{-> New statement.while(exp.exp, statement.statement)} | 
-		{print} println l_par exp? r_par semi
+		{print} tok_print l_paren exp? r_paren semi
 			{-> New statement.print(exp.exp)} | 
 		{assign} id assign exp semi
 			{-> New statement.assign(id, exp.exp)} | 
-		{assign_vector} id l_bkt [index]:exp r_bkt assign [value]:exp semi
+		{assign_vector} id l_brack [index]:exp r_brack assign [value]:exp semi
 			{-> New statement.assign_vector(id, index.exp, value.exp)} |
-		{if_only} if l_par exp r_par statement
+		{if_only} tok_if l_paren exp r_paren statement
 			{-> New statement.if_only(exp.exp, statement.statement)} |
-		{if_else} if l_par exp r_par [true]:statement_no_short_if else [false]:statement
+		{if_else} tok_if l_paren exp r_paren [true]:statement_no_short_if tok_else [false]:statement
 			{-> New statement.if_else(exp.exp, true.statement, false.statement)};
 
 	statement_no_short_if {-> statement} =
-		{brc} l_brc statement+ r_brc
+		{brc} l_brace statement+ r_brace
 			{-> New statement.brc([statement.statement])} | 
-		{while} while l_par exp r_par statement_no_short_if
+		{while} tok_while l_paren exp r_paren statement_no_short_if
 			{-> New statement.while(exp.exp, statement_no_short_if.statement)} | 
-		{print} println l_par exp? r_par semi
+		{print} tok_print l_paren exp? r_paren semi
 			{-> New statement.print(exp.exp)} | 
 		{assign} id assign exp semi
 			{-> New statement.assign(id, exp.exp)} | 
-		{assign_vector} id l_bkt [index]:exp r_bkt assign [value]:exp semi
+		{assign_vector} id l_brack [index]:exp r_brack assign [value]:exp semi
 			{-> New statement.assign_vector(id, index.exp, value.exp)} |
-		{if_else} if l_par exp r_par [true]:statement_no_short_if else [false]:statement_no_short_if
+		{if_else} tok_if l_paren exp r_paren [true]:statement_no_short_if tok_else [false]:statement_no_short_if
 			{-> New statement.if_else(exp.exp, true.statement, false.statement)};
 
 	exp {-> exp} =
@@ -192,25 +193,23 @@ Productions
 			{-> exp_cmp.exp};
 
 	exp_void {-> exp} =
-		{new_vector} tok_new int matrix+
+		{new_vector} tok_new tok_int matrix+
 			{-> New exp.new_vector([matrix.exp])};
 
 	exp_new {-> exp} =
-		{new_instance} tok_new id l_par r_par
+		{new_instance} tok_new id l_paren r_paren
 			{-> New exp.new_instance(id)};
 
 	exp_cmp {-> exp} = 
-		{and} [left]:exp_cmp amp_amp [right]:inequation_term
+		{and} [left]:exp_cmp and [right]:inequation_term
 			{-> New exp.and(left.exp, right.exp)} |
-		{or} [left]:exp_cmp bar_bar [right]:inequation_term
-			{-> New exp.or(left.exp, right.exp)} |
 		{inequation_term} inequation_term
 			{-> inequation_term.exp};
 
 	inequation_term {-> exp} =
-		{greater} [left]:inequation_term greater_than_op [right]:plus_term
-			{-> New exp.greater(left.exp, right.exp)} |
-		{less} [left]:inequation_term less_than_op [right]:plus_term
+		{eq} [left]:inequation_term eq [right]:plus_term
+			{-> New exp.eq(left.exp, right.exp)} |
+		{less} [left]:inequation_term lt [right]:plus_term
 			{-> New exp.less(left.exp, right.exp)} |
 		{plus_term} plus_term
 			{-> plus_term.exp};
@@ -224,13 +223,13 @@ Productions
 			{-> times_term.exp};
 
 	times_term {-> exp} = 
-		{times} [left]:times_term star [right]:not_term
+		{times} [left]:times_term times [right]:not_term
 			{-> New exp.times(left.exp, right.exp)} |
 		{not_term} not_term
 			{-> not_term.exp};
 
 	not_term {-> exp} = 
-		{not} emark not_term
+		{not} not not_term
 			{-> New exp.not(not_term.exp)} |
 		{exp_value} exp_value
 			{-> exp_value.exp};
@@ -243,14 +242,14 @@ Productions
 
 	exp_method {-> exp} =
 		/* Exp Method */
-		{length} exp_method dot length
+		{length} exp_method period tok_length
 			{-> New exp.length(exp_method.exp)} |
-		{call}	[obj]:exp_method dot id l_par [args]:exp_list? r_par
+		{call}	[obj]:exp_method period id l_paren [args]:exp_list? r_paren
 			{-> New exp.call(obj.exp, id, args.exp_list)} |
 		/* Exp New */
-		{length_void} exp_void dot length
+		{length_void} exp_void period tok_length
 			{-> New exp.length(exp_void.exp)} |
-		{call_new}	[obj]:exp_new dot id l_par [args]:exp_list? r_par
+		{call_new}	[obj]:exp_new period id l_paren [args]:exp_list? r_paren
 			{-> New exp.call(obj.exp, id, args.exp_list)} |
 		{factor} factor
 			{-> factor.exp};
@@ -258,19 +257,21 @@ Productions
 	factor {-> exp} = 
 		{id} id
 			{-> New exp.id(id)} |
-		{this} this
-			{-> New exp.this(this)} |
-		{true} true
-			{-> New exp.true(true)} |
-		{false} false
-			{-> New exp.false(false)} |
+		{this} tok_this
+			{-> New exp.this(tok_this)} |
+		{null} tok_null
+			{-> New exp.null(tok_null)} |
+		{true} tok_true
+			{-> New exp.true(tok_true)} |
+		{false} tok_false
+			{-> New exp.false(tok_false)} |
 		{integer} integer_literal
 			{-> New exp.integer(integer_literal)} |
-		{exp_par} l_par exp r_par
+		{exp_par} l_paren exp r_paren
 			{-> exp.exp};
 
 	matrix {-> exp} = 
-		l_bkt exp_method r_bkt
+		l_brack exp_method r_brack
 			{-> exp_method.exp};
 
 	exp_list {-> exp_list} = exp exp_rest*
@@ -288,11 +289,11 @@ Abstract Syntax Tree
 	method_decl = type [name]:id arg_list? var_decl* statement* exp;
 	arg_list = {one_more} type id arg_list* |
 		{arg_rest} type id;
-	type = {int_vector} int |
-		{int} int |
-		{boolean} boolean |
-		{string} string |
-		{void} void |
+	type = {int_vector} tok_int |
+		{int} tok_int |
+		{boolean} tok_boolean |
+		{string} tok_string |
+		{void} tok_void |
 		{id} id;
 	statement = {brc} statement+ |
 		{if_only} exp statement |
@@ -311,13 +312,13 @@ Abstract Syntax Tree
 		{times} [left]:exp [right]:exp |
 		{and} [left]:exp [right]:exp |
 		{less} [left]:exp [right]:exp |
-		{greater} [left]:exp [right]:exp |
-		{or} [left]:exp [right]:exp |
+		{eq} [left]:exp [right]:exp |
 		{not} exp |
 		{id} id |
-		{this} this |
-		{true} true |
-		{false} false |
+		{this} tok_this |
+		{null} tok_null |
+		{true} tok_true |
+		{false} tok_false |
 		{integer} integer_literal;
 	exp_list = {exp_list} exp exp_list* |
 		{exp_rest} exp;
