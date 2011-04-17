@@ -84,11 +84,9 @@ Productions
 		[class_l_brace]:l_brace 
 			tok_public tok_static tok_void tok_main 
 					l_paren tok_string l_brack r_brack [args]:id r_paren
-			[function_l_brace]:l_brace
-				statement*
-			[function_r_brace]:r_brace 
+				statement
 		[class_r_brace]:r_brace 
-			{-> New main_class(name, args, [statement.statement])} ;
+			{-> New main_class(name, args, statement.statement)} ;
 
 	class_decl {-> class_decl} =
 		{simple_class} tok_class [name]:id
@@ -151,11 +149,11 @@ Productions
 	 */
 	statement {-> statement} = 
 		{block} l_brace statement+ r_brace
-			{-> New statement.block([statement.statement])} | 
+			{-> New statement.block(l_brace, [statement.statement])} | 
 		{while} tok_while l_paren exp r_paren statement
 			{-> New statement.while(exp.exp, statement.statement)} | 
 		{print} tok_print l_paren exp? r_paren semi
-			{-> New statement.print(exp.exp)} | 
+			{-> New statement.print(tok_print, exp.exp)} | 
 		{assign} id assign exp semi
 			{-> New statement.assign(id, exp.exp)} | 
 		{array_assign} id l_brack [index]:exp r_brack assign [value]:exp semi
@@ -167,11 +165,11 @@ Productions
 
 	statement_no_short_if {-> statement} =
 		{block} l_brace statement+ r_brace
-			{-> New statement.block([statement.statement])} | 
+			{-> New statement.block(l_brace, [statement.statement])} | 
 		{while} tok_while l_paren exp r_paren statement_no_short_if
 			{-> New statement.while(exp.exp, statement_no_short_if.statement)} | 
 		{print} tok_print l_paren exp? r_paren semi
-			{-> New statement.print(exp.exp)} | 
+			{-> New statement.print(tok_print, exp.exp)} | 
 		{assign} id assign exp semi
 			{-> New statement.assign(id, exp.exp)} | 
 		{array_assign} id l_brack [index]:exp r_brack assign [value]:exp semi
@@ -274,19 +272,19 @@ Productions
 		{-> exp.exp};
 	
 Abstract Syntax Tree
-	program = main_class class_decl*;
-	main_class = [name]:id [args]:id statement*;
-	class_decl = [name]:id [super]:id? var_decl* method_decl*;
+	program = main_class [classes]:class_decl*;
+	main_class = [name]:id [main_args]:id statement;
+	class_decl = [name]:id [super]:id? [attributes]:var_decl* [methods]:method_decl*;
 	var_decl = type id;
 	method_decl = type [name]:id formal* var_decl* statement* exp;
 	type = {array} tok_int |
         {int} tok_int |
         {boolean} tok_boolean |
 		{object} id;
-	statement = {block} statement+ |
+	statement = {block} [token]:l_brace [statements]:statement+ |
 		{if} exp [true]:statement [false]:statement? |
 		{while} exp statement |
-		{print} exp? |
+		{print} [token]:tok_print [value]:exp? |
 		{assign} id exp |
 		{array_assign} id [index]:exp [value]:exp;
 	exp = {plus} [left]:exp [right]:exp |
@@ -305,7 +303,7 @@ Abstract Syntax Tree
 		{this} tok_this |
 		{true} tok_true |
 		{false} tok_false |
-		{integer_literal} integer_literal;
+		{integer_literal} [value]:integer_literal;
     formal = type id;
 
 /*vim:sw=2:ts=2:et*/
