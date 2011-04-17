@@ -137,10 +137,6 @@ Productions
 			{-> New type.int(tok_int)} |
 		{boolean} tok_boolean
 			{-> New type.boolean(tok_boolean)} |
-		{identifier} tok_string
-			{-> New type.identifier(tok_string)} |
-		{void} tok_void
-			{-> New type.void(tok_void)} |
 		{object} id
 			{-> New type.object(id)};
 
@@ -154,8 +150,8 @@ Productions
 	 *    if (X) {if (Y) S1} else S2
 	 */
 	statement {-> statement} = 
-		{block_statement} l_brace statement+ r_brace
-			{-> New statement.block_statement([statement.statement])} | 
+		{block} l_brace statement+ r_brace
+			{-> New statement.block([statement.statement])} | 
 		{while} tok_while l_paren exp r_paren statement
 			{-> New statement.while(exp.exp, statement.statement)} | 
 		{print} tok_print l_paren exp? r_paren semi
@@ -170,8 +166,8 @@ Productions
 			{-> New statement.if(exp.exp, true.statement, false.statement)};
 
 	statement_no_short_if {-> statement} =
-		{block_statement} l_brace statement+ r_brace
-			{-> New statement.block_statement([statement.statement])} | 
+		{block} l_brace statement+ r_brace
+			{-> New statement.block([statement.statement])} | 
 		{while} tok_while l_paren exp r_paren statement_no_short_if
 			{-> New statement.while(exp.exp, statement_no_short_if.statement)} | 
 		{print} tok_print l_paren exp? r_paren semi
@@ -288,10 +284,8 @@ Abstract Syntax Tree
 	type = {array} tok_int |
         {int} tok_int |
         {boolean} tok_boolean |
-        {identifier} tok_string |
-        {void} tok_void |
 		{object} id;
-	statement = {block_statement} statement+ |
+	statement = {block} statement+ |
 		{if} exp [true]:statement [false]:statement? |
 		{while} exp statement |
 		{print} exp? |
