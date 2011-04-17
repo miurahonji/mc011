@@ -1,8 +1,8 @@
 import java.io.*;
 
-import Minijava.node.*;
-import Minijava.lexer.*;
-import Minijava.parser.*;
+import minijava.node.*;
+import minijava.lexer.*;
+import minijava.parser.*;
 import Action.*;
 
 public class RunTeste
@@ -24,8 +24,8 @@ public class RunTeste
 				new FileReader(arguments[0])), 1024));
 			Parser parser = new Parser(lexer);
 			Start ast = parser.parse();
-
-			ast.apply(new Translation());
+			System.out.println(ast);
+			//ast.apply(new Translation());
 		}
 		catch(Exception e)
 		{

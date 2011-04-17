@@ -120,27 +120,27 @@ Productions
 			tok_return exp semi
 		r_brace
 			{-> New method_decl(
-				type.type, name, arg_list.formal, [var_decl.var_decl],
+				type.type, name, [arg_list.formal], [var_decl.var_decl],
 				[statement.statement], exp.exp
 			)};
 
 	arg_list {-> formal} = {arg_single} type id arg_rest*
-			{-> New formal.arg_single(type.type, id, [arg_rest.formal])};
+        {-> New formal(type.type, id)};
 
 	arg_rest {-> formal} = {arg_rest} comma type id
-		{-> New formal.arg_rest(type.type, id)};
+		{-> New formal(type.type, id)};
 
 	type {-> type} = 
 		{array} tok_int l_brack r_brack 
 			{-> New type.array(tok_int)} |
 		{int} tok_int
-			{-> tok_int} |
+			{-> New type.int(tok_int)} |
 		{boolean} tok_boolean
-			{-> tok_boolean} |
-		{string} tok_string
-			{-> tok_string} |
+			{-> New type.boolean(tok_boolean)} |
+		{identifier} tok_string
+			{-> New type.identifier(tok_string)} |
 		{void} tok_void
-			{-> tok_void} |
+			{-> New type.void(tok_void)} |
 		{object} id
 			{-> New type.object(id)};
 
@@ -244,12 +244,12 @@ Productions
 		{array_length} exp_method period tok_length
 			{-> New exp.array_length(exp_method.exp)} |
 		{call}	[obj]:exp_method period id l_paren [args]:exp_list? r_paren
-			{-> New exp.call(obj.exp, id, args.formal)} |
+			{-> New exp.call(obj.exp, id, [args.exp])} |
 		/* Exp New */
 		{length_void} exp_void period tok_length
 			{-> New exp.array_length(exp_void.exp)} |
 		{call_new}	[obj]:exp_new period id l_paren [args]:exp_list? r_paren
-			{-> New exp.call(obj.exp, id, args.formal)} |
+			{-> New exp.call(obj.exp, id, [args.exp])} |
 		{factor} factor
 			{-> factor.exp};
 
@@ -273,19 +273,23 @@ Productions
 		l_brack exp_method r_brack
 			{-> exp_method.exp};
 
-	exp_list {-> formal} = {exp_single} exp exp_rest*
-		{-> New formal.exp_single(exp.exp, [exp_rest.formal])};
+	exp_list {-> exp} = {exp_single} exp exp_rest*
+		{-> exp.exp};
 
-	exp_rest {-> formal} = {exp_rest} comma exp
-		{-> New formal.exp_rest(exp.exp)};
+	exp_rest {-> exp} = {exp_rest} comma exp
+		{-> exp.exp};
 	
 Abstract Syntax Tree
 	program = main_class class_decl*;
 	main_class = [name]:id [args]:id statement*;
 	class_decl = [name]:id [super]:id? var_decl* method_decl*;
 	var_decl = type id;
-	method_decl = type [name]:id formal? var_decl* statement* exp;
+	method_decl = type [name]:id formal* var_decl* statement* exp;
 	type = {array} tok_int |
+        {int} tok_int |
+        {boolean} tok_boolean |
+        {identifier} tok_string |
+        {void} tok_void |
 		{object} id;
 	statement = {block_statement} statement+ |
 		{if} exp [true]:statement [false]:statement? |
@@ -297,7 +301,7 @@ Abstract Syntax Tree
 		{minus} [left]:exp [right]:exp |
 		{array_lookup} [id]:exp [index]:exp |
 		{array_length} exp |
-		{call} exp id formal? |
+		{call} [object]:exp id [actuals]:exp* |
 		{new_array} exp+ |
 		{new_object} id |
 		{times} [left]:exp [right]:exp |
@@ -311,9 +315,6 @@ Abstract Syntax Tree
 		{true} tok_true |
 		{false} tok_false |
 		{integer_literal} integer_literal;
-    formal = {arg_single} type id formal* |
-		{arg_rest} type id |
-        {exp_single} exp formal* |
-		{exp_rest} exp;
+    formal = type id;
 
 /*vim:sw=2:ts=2:et*/
