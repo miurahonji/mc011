@@ -254,8 +254,6 @@ Productions
 			{-> New exp.identifier(id)} |
 		{this} tok_this
 			{-> New exp.this(tok_this)} |
-		{null} tok_null
-			{-> New exp.null(tok_null)} |
 		{true} tok_true
 			{-> New exp.true(tok_true)} |
 		{false} tok_false
@@ -305,7 +303,6 @@ Abstract Syntax Tree
 		{not} exp |
 		{identifier} id |
 		{this} tok_this |
-		{null} tok_null |
 		{true} tok_true |
 		{false} tok_false |
 		{integer_literal} integer_literal;
