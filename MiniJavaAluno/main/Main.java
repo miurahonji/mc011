@@ -37,17 +37,17 @@ import minijava.parser.Parser;
 // Solucao adotada: podem; perdem o acesso a variavel
 // da super classe se o fizerem.
 public final class Main
-{       
+{	   
 	public static void main(String[] args) 
 	{
 		try
 		{
-            String name = args.length == 0 ? "stdin" : args[0];
-            
+			String name = args.length == 0 ? "stdin" : args[0];
+			
 			// from here...
 			InputStream is = args.length == 0 ? 
-					         System.in : 
-					         new FileInputStream(args[0]);
+							 System.in : 
+							 new FileInputStream(args[0]);
 			InputStreamReader input = new InputStreamReader(is);
 			PushbackReader pushback = new PushbackReader(input);
 			Lexer lexer = new Lexer(pushback);
@@ -55,9 +55,9 @@ public final class Main
 			
 			Start s = parser.parse();
 			
-             		//Uncomment this to print sablecc's AST.
+			 //Uncomment this to print sablecc's AST.
 			System.out.println(s);
-            
+			
 			// ... up until here, classes and package organization
 			// are decided by SableCC
 			
@@ -82,23 +82,23 @@ public final class Main
 			//PrettyPrint v1 = new PrettyPrint(System.err);
 			//program.accept(v1);
 
-            //----PROJETO-1: Chamada do pacote semantico ----------------------------------------------
+			//----PROJETO-1: Chamada do pacote semantico ----------------------------------------------
 			
-           // now we've got to apply the 2-pass semant analyser.
-            ErrorEchoer err = new SimpleError(name);
-            Env env = TypeChecker.TypeCheck(err, program);
+			// now we've got to apply the 2-pass semant analyser.
+			ErrorEchoer err = new SimpleError(name);
+			Env env = TypeChecker.TypeCheck(err, program);
 
-            if ( err.ErrorCount() != 0 )
-            {
-                err.Print(new Object[]{err.ErrorCount() + " erros", err.WarningCount() + " avisos"});
-                return;
-            }
+			if ( err.ErrorCount() != 0 )
+			{
+				err.Print(new Object[]{err.ErrorCount() + " erros", err.WarningCount() + " avisos"});
+				return;
+			}
 			
 		}
 		catch(Throwable e)
 		{
 			System.err.println(e.getMessage());
-            e.printStackTrace();
+			e.printStackTrace();
 		}
 		
 		System.exit(0);
