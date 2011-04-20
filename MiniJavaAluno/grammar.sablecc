@@ -169,7 +169,7 @@ Productions
 		{while} tok_while l_paren exp r_paren statement_no_short_if
 			{-> New statement.while(exp.exp, statement_no_short_if.statement)} | 
 		{print} tok_print l_paren exp? r_paren semi
-			{-> New statement.print(tok_print, exp.exp)} | 
+			{-> New statement.print(exp.exp)} | 
 		{assign} id assign exp semi
 			{-> New statement.assign(id, exp.exp)} | 
 		{array_assign} id l_brack [index]:exp r_brack assign [value]:exp semi
@@ -186,8 +186,8 @@ Productions
 			{-> exp_cmp.exp};
 
 	exp_void {-> exp} =
-		{new_array} tok_new tok_int matrix+
-			{-> New exp.new_array([matrix.exp])};
+		{new_array} tok_new tok_int l_brack exp_method r_brack
+			{-> New exp.new_array(l_brack, exp_method.exp)};
 
 	exp_new {-> exp} =
 		{new_object} tok_new id l_paren r_paren
@@ -195,7 +195,7 @@ Productions
 
 	exp_cmp {-> exp} = 
 		{and} [left]:exp_cmp and [right]:inequation_term
-			{-> New exp.and(left.exp, right.exp)} |
+			{-> New exp.and(and, left.exp, right.exp)} |
 		{inequation_term} inequation_term
 			{-> inequation_term.exp};
 
@@ -209,9 +209,9 @@ Productions
 
 	plus_term {-> exp} =
 		{plus} [left]:plus_term plus [right]:times_term 
-			{-> New exp.plus(left.exp, right.exp)} |
+			{-> New exp.plus(plus, left.exp, right.exp)} |
 		{minus} [left]:plus_term minus [right]:times_term
-			{-> New exp.minus(left.exp, right.exp)} |
+			{-> New exp.minus(minus, left.exp, right.exp)} |
 		{times_term} times_term 
 			{-> times_term.exp};
 
@@ -228,8 +228,8 @@ Productions
 			{-> exp_value.exp};
 
 	exp_value {-> exp} = 
-		{array_lookup} [id]:exp_value [index]:matrix
-			{-> New exp.array_lookup(id.exp, index.exp)} |
+		{array_lookup} [id]:exp_value l_brack [index]:exp_method r_brack
+			{-> New exp.array_lookup(l_brack, id.exp, index.exp)} |
 		{exp_method} exp_method
 			{-> exp_method.exp};
 
@@ -261,10 +261,6 @@ Productions
 		{exp_par} l_paren exp r_paren
 			{-> exp.exp};
 
-	matrix {-> exp} = 
-		l_brack exp_method r_brack
-			{-> exp_method.exp};
-
 	exp_list {-> exp} = {exp_single} exp exp_rest*
 		{-> exp.exp};
 
@@ -287,22 +283,22 @@ Abstract Syntax Tree
 		{print} [token]:tok_print [value]:exp? |
 		{assign} id exp |
 		{array_assign} id [index]:exp [value]:exp;
-	exp = {plus} [left]:exp [right]:exp |
-		{minus} [left]:exp [right]:exp |
-		{array_lookup} [id]:exp [index]:exp |
-		{array_length} exp |
-		{call} [object]:exp id [actuals]:exp* |
-		{new_array} exp+ |
-		{new_object} id |
-		{times} [left]:exp [right]:exp |
-		{and} [left]:exp [right]:exp |
-		{less_than} [left]:exp [right]:exp |
-		{equal} [left]:exp [right]:exp |
-		{not} exp |
-		{identifier} id |
-		{this} tok_this |
-		{true} tok_true |
-		{false} tok_false |
+	exp = {plus} [token]:plus [lhs]:exp [rhs]:exp |
+		{minus} [token]:minus [lhs]:exp [rhs]:exp |
+		{array_lookup} [token]:l_brack [array]:exp [index]:exp |
+		{array_length} [array]:exp |
+		{call} [object]:exp [method]:id [actuals]:exp* |
+		{new_array} [token]:l_brack [size]:exp |
+		{new_object} [name]:id |
+		{times} [lhs]:exp [rhs]:exp |
+		{and} [token]:and [lhs]:exp [rhs]:exp |
+		{less_than} [lhs]:exp [rhs]:exp |
+		{equal} [lhs]:exp [rhs]:exp |
+		{not} [value]:exp |
+		{identifier} [name]:id |
+		{this} [token]:tok_this |
+		{true} [token]:tok_true |
+		{false} [token]:tok_false |
 		{integer_literal} [value]:integer_literal;
     formal = type id;
 
