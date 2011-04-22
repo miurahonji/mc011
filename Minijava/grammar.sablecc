@@ -169,7 +169,7 @@ Productions
 		{while} tok_while l_paren exp r_paren statement_no_short_if
 			{-> New statement.while(exp.exp, statement_no_short_if.statement)} | 
 		{print} tok_print l_paren exp? r_paren semi
-			{-> New statement.print(exp.exp)} | 
+			{-> New statement.print(tok_print, exp.exp)} | 
 		{assign} id assign exp semi
 			{-> New statement.assign(id, exp.exp)} | 
 		{array_assign} id l_brack [index]:exp r_brack assign [value]:exp semi
