@@ -271,10 +271,10 @@ Abstract Syntax Tree
 	program = main_class [classes]:class_decl*;
 	main_class = [name]:id [main_args]:id statement;
 	class_decl = [name]:id [super]:id? [attributes]:var_decl* [methods]:method_decl*;
-	var_decl = type id;
-	method_decl = type [name]:id formal* var_decl* statement* exp;
+	var_decl = type [name]:id;
+	method_decl = [return_type]:type [name]:id [formals]:formal* [locals]:var_decl* [body]:statement* [return_exp]:exp;
 	type = {array} tok_int |
-        {int} tok_int |
+        {int} [token]:tok_int |
         {boolean} tok_boolean |
 		{object} id;
 	statement = {block} [token]:l_brace [statements]:statement+ |
