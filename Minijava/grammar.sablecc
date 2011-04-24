@@ -201,9 +201,9 @@ Productions
 
 	inequation_term {-> exp} =
 		{equal} [left]:inequation_term eq [right]:plus_term
-			{-> New exp.equal(left.exp, right.exp)} |
+			{-> New exp.equal(eq, left.exp, right.exp)} |
 		{less_than} [left]:inequation_term lt [right]:plus_term
-			{-> New exp.less_than(left.exp, right.exp)} |
+			{-> New exp.less_than(lt, left.exp, right.exp)} |
 		{plus_term} plus_term
 			{-> plus_term.exp};
 
@@ -217,13 +217,13 @@ Productions
 
 	times_term {-> exp} = 
 		{times} [left]:times_term times [right]:not_term
-			{-> New exp.times(left.exp, right.exp)} |
+			{-> New exp.times(times, left.exp, right.exp)} |
 		{not_term} not_term
 			{-> not_term.exp};
 
 	not_term {-> exp} = 
 		{not} not not_term
-			{-> New exp.not(not_term.exp)} |
+			{-> New exp.not(not, not_term.exp)} |
 		{exp_value} exp_value
 			{-> exp_value.exp};
 
@@ -236,12 +236,12 @@ Productions
 	exp_method {-> exp} =
 		/* Exp Method */
 		{array_length} exp_method period tok_length
-			{-> New exp.array_length(exp_method.exp)} |
+			{-> New exp.array_length(tok_length, exp_method.exp)} |
 		{call}	[obj]:exp_method period id l_paren [args]:exp_list? r_paren
 			{-> New exp.call(obj.exp, id, [args.exp])} |
 		/* Exp New */
 		{length_void} exp_void period tok_length
-			{-> New exp.array_length(exp_void.exp)} |
+			{-> New exp.array_length(tok_length, exp_void.exp)} |
 		{call_new}	[obj]:exp_new period id l_paren [args]:exp_list? r_paren
 			{-> New exp.call(obj.exp, id, [args.exp])} |
 		{factor} factor
@@ -273,33 +273,33 @@ Abstract Syntax Tree
 	class_decl = [name]:id [super]:id? [attributes]:var_decl* [methods]:method_decl*;
 	var_decl = type [name]:id;
 	method_decl = [return_type]:type [name]:id [formals]:formal* [locals]:var_decl* [body]:statement* [return_exp]:exp;
-	type = {array} tok_int |
+	type = {array} [token]:tok_int |
         {int} [token]:tok_int |
-        {boolean} tok_boolean |
-		{object} id;
+        {boolean} [token]:tok_boolean |
+		{object} [name]:id;
 	statement = {block} [token]:l_brace [statements]:statement+ |
-		{if} exp [true]:statement [false]:statement? |
-		{while} exp statement |
+		{if} [condition]:exp [then_clause]:statement [else_clause]:statement? |
+		{while} [condition]:exp [body]:statement |
 		{print} [token]:tok_print [value]:exp? |
-		{assign} id exp |
-		{array_assign} id [index]:exp [value]:exp;
+		{assign} [target]:id [value]:exp |
+		{array_assign} [target]:id [index]:exp [value]:exp;
 	exp = {plus} [token]:plus [lhs]:exp [rhs]:exp |
 		{minus} [token]:minus [lhs]:exp [rhs]:exp |
 		{array_lookup} [token]:l_brack [array]:exp [index]:exp |
-		{array_length} [array]:exp |
+		{array_length} [token]:tok_length [array]:exp |
 		{call} [object]:exp [method]:id [actuals]:exp* |
 		{new_array} [token]:l_brack [size]:exp |
 		{new_object} [name]:id |
-		{times} [lhs]:exp [rhs]:exp |
+		{times} [token]:times [lhs]:exp [rhs]:exp |
 		{and} [token]:and [lhs]:exp [rhs]:exp |
-		{less_than} [lhs]:exp [rhs]:exp |
-		{equal} [lhs]:exp [rhs]:exp |
-		{not} [value]:exp |
+		{less_than} [token]:lt [lhs]:exp [rhs]:exp |
+		{equal} [token]:eq [lhs]:exp [rhs]:exp |
+		{not} [token]:not [value]:exp |
 		{identifier} [name]:id |
 		{this} [token]:tok_this |
 		{true} [token]:tok_true |
 		{false} [token]:tok_false |
 		{integer_literal} [value]:integer_literal;
-    formal = type id;
+    formal = type [name]:id;
 
 /*vim:sw=2:ts=2:et*/
