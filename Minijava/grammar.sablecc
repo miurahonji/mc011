@@ -151,7 +151,7 @@ Productions
 		{block} l_brace statement+ r_brace
 			{-> New statement.block(l_brace, [statement.statement])} | 
 		{while} tok_while l_paren exp r_paren statement
-			{-> New statement.while(exp.exp, statement.statement)} | 
+			{-> New statement.while(tok_while, exp.exp, statement.statement)} | 
 		{print} tok_print l_paren exp? r_paren semi
 			{-> New statement.print(tok_print, exp.exp)} | 
 		{assign} id assign exp semi
@@ -167,7 +167,7 @@ Productions
 		{block} l_brace statement+ r_brace
 			{-> New statement.block(l_brace, [statement.statement])} | 
 		{while} tok_while l_paren exp r_paren statement_no_short_if
-			{-> New statement.while(exp.exp, statement_no_short_if.statement)} | 
+			{-> New statement.while(tok_while, exp.exp, statement_no_short_if.statement)} | 
 		{print} tok_print l_paren exp? r_paren semi
 			{-> New statement.print(tok_print, exp.exp)} | 
 		{assign} id assign exp semi
@@ -279,7 +279,7 @@ Abstract Syntax Tree
 		{object} [name]:id;
 	statement = {block} [token]:l_brace [statements]:statement+ |
 		{if} [condition]:exp [then_clause]:statement [else_clause]:statement? |
-		{while} [condition]:exp [body]:statement |
+		{while} [token]:tok_while [condition]:exp [body]:statement |
 		{print} [token]:tok_print [value]:exp? |
 		{assign} [target]:id [value]:exp |
 		{array_assign} [target]:id [index]:exp [value]:exp;
