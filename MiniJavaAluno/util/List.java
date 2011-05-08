@@ -21,4 +21,16 @@ public class List<E>
         
         return 1 + tail.size();
     }
+
+	public boolean contains(E e)
+	{
+		if (e == head)
+			return true;
+
+		for ( List<E> es = tail; es != null; es = es.tail )
+			if (e == es)
+				return true;
+
+		return false;
+	}
 }

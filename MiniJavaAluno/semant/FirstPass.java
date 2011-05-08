@@ -46,10 +46,18 @@ import symbol.ClassInfo;
 import symbol.MethodInfo;
 import symbol.Symbol;
 import symbol.VarInfo;
+import syntaxtree.Type;
 
 public class FirstPass implements Visitor
 {
 	private Env e;
+	private ClassInfo lastClass;
+	private MethodInfo lastMethod;
+	private VarInfo lastVar;
+	private Symbol lastIdentifier;
+	private Symbol lastIdentifierType;
+	private Type lastType;
+
 	private FirstPass()
 	{
 		super();
@@ -98,36 +106,15 @@ public class FirstPass implements Visitor
 	{
 		node.name.accept(this);
 		
-		Symbol s = Symbol.symbol(node.name.toString());
-		ClassInfo ci = new ClassInfo(s);
+		lastClass = new ClassInfo(lastIdentifier);
 
 		for ( List<VarDecl> vars = node.varList; vars != null; vars = vars.tail )
-		{
 			vars.head.accept(this);
-			s = Symbol.symbol(vars.head.name.toString());
-			VarInfo v = new VarInfo(vars.head.type, s);
-			if (!ci.addAttribute(v))
-			{
-				VarInfo old = ci.attributes.get(s);
-				e.err.Print(new Object[]{"Attribute's name '" + vars.head.name + "' was already taken on class '" + node.name + "'",
-						"Line " + vars.head.name.line + ", row " + vars.head.name.row });
-			}
-		}
 
 		for ( List<MethodDecl> methods = node.methodList; methods != null; methods = methods.tail )
-		{
 			methods.head.accept(this);
-			s = Symbol.symbol(methods.head.name.toString());
-			MethodInfo m = new MethodInfo(methods.head.returnType, s, ci.name);
-			if (!ci.addMethod(m))
-			{
-				MethodInfo old = ci.methods.get(s);
-				e.err.Print(new Object[]{"Method's name '" + methods.head.name + "' was already added",
-						"Line " + methods.head.name.line + ", row " + methods.head.name.row });
-			}
-		}
 		
-		if (!e.classes.put(s, ci))
+		if (!e.classes.put(lastClass.name, lastClass))
 			e.err.Print(new Object[]{"Class named '" + node.name + "' was already added",
 					"Line " + node.name.line + ", row " + node.name.row });
 	}
@@ -136,12 +123,24 @@ public class FirstPass implements Visitor
 	{
 		node.type.accept(this);
 		node.name.accept(this);
+
+		VarInfo v = new VarInfo(lastType, lastIdentifier);
+		// Is this VarDecl from Method (local variable) or from Class (attribute)
+		if ((lastMethod != null) && (lastMethod.locals.contains(v)))
+			// no override?!
+			e.err.Print(new Object[]{"Variable's name '" + lastIdentifier + "' was already taken on scope of method '" + lastMethod.name + "'",
+					"Line " + node.line + ", row " + node.row });
+		else if (!lastClass.addAttribute(v))
+			e.err.Print(new Object[]{"Attribute's name '" + lastIdentifier + "' was already taken on class '" + lastClass.name + "'",
+					"Line " + node.line + ", row " + node.row });
 	}
 
 	public void visit(MethodDecl node)
 	{
 		node.returnType.accept(this);
 		node.name.accept(this);
+
+		lastMethod = new MethodInfo(lastType, lastIdentifier, lastClass.name);
 		
 		for ( List<Formal> f = node.formals; f != null; f = f.tail )
 		{
@@ -151,17 +150,17 @@ public class FirstPass implements Visitor
 				return;
 		}
 		
-		
 		for ( List<VarDecl> l = node.locals; l != null; l = l.tail )
 			l.head.accept(this);
 		
 		for ( List<Statement> s = node.body; s != null; s = s.tail )
 			s.head.accept(this);
 		
-		
 		node.returnExp.accept(this);
 		
-		
+		if (!lastClass.addMethod(lastMethod))
+			e.err.Print(new Object[]{"Method's name '" + lastMethod.name + "' was already added",
+					"Line " + lastMethod.type.line + ", row " + lastMethod.type.row });
 	}
 
 	public void visit(Formal node)
@@ -172,22 +171,22 @@ public class FirstPass implements Visitor
 
 	public void visit(IntArrayType node)
 	{
-		return;
+		lastType = node;
 	}
 
 	public void visit(BooleanType node)
 	{
-		return;
+		lastType = node;
 	}
 
 	public void visit(IntegerType node)
 	{
-		return;
+		lastType = node;
 	}
 
 	public void visit(IdentifierType node)
 	{
-		return;
+		lastType = node;
 	}
 
 	public void visit(Block node)
@@ -338,7 +337,11 @@ public class FirstPass implements Visitor
 
 	public void visit(Identifier node)
 	{
-		return;
+		lastIdentifier = Symbol.symbol(node.s.toString());
 	}
 
+	public void visit(Type node)
+	{
+		return;
+	}
 }
