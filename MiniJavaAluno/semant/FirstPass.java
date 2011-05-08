@@ -79,12 +79,8 @@ public class FirstPass implements Visitor
 		node.s.accept(this);
 		
 		if (!e.classes.put(s, ci))
-		{
-			ClassInfo old = e.classes.get(s);
-			// TODO: use old to gather old properties of column and row
-			e.err.Print(new Object[]{"Class named '" + node.className + "' was already added",
-					"somewhere..." });
-		}
+			e.err.Print(new Object[]{"Main class' name '" + node.className + "' was already taken.",
+					"Line " + node.className.line + ", row " + node.className.row });
 	}
 
 	public void visit(ClassDeclSimple node)
@@ -102,8 +98,8 @@ public class FirstPass implements Visitor
 			if (!ci.addAttribute(v))
 			{
 				VarInfo old = ci.attributes.get(s);
-				e.err.Print(new Object[]{"Attribute named '" + vars.head.name + "' was already added",
-						"Before it was of type: " + old.type});
+				e.err.Print(new Object[]{"Attribute's name '" + vars.head.name + "' was already taken on class '" + node.name + "'",
+						"Line " + vars.head.name.line + ", row " + vars.head.name.row });
 			}
 		}
 
@@ -115,33 +111,54 @@ public class FirstPass implements Visitor
 			if (!ci.addMethod(m))
 			{
 				MethodInfo old = ci.methods.get(s);
-				e.err.Print(new Object[]{"Method named '" + methods.head.name + "' was already added",
-						"Before it was of return type: " + old.type});
+				e.err.Print(new Object[]{"Method's name '" + methods.head.name + "' was already added",
+						"Line " + methods.head.name.line + ", row " + methods.head.name.row });
 			}
 		}
 		
 		if (!e.classes.put(s, ci))
-		{
-			ClassInfo old = e.classes.get(s);
-			// TODO: use old to gather old properties of column and row
 			e.err.Print(new Object[]{"Class named '" + node.name + "' was already added",
-					"somewhere..." });
-		}
+					"Line " + node.name.line + ", row " + node.name.row });
 	}
 
 	public void visit(ClassDeclExtends node)
 	{
 		node.name.accept(this);
+
+		Symbol s = Symbol.symbol(node.name.toString());
+		ClassInfo ci = new ClassInfo(s);
+
 		node.superClass.accept(this);
 		
 		for ( List<VarDecl> vars = node.varList; vars != null; vars = vars.tail )
 		{
 			vars.head.accept(this);
+			s = Symbol.symbol(vars.head.name.toString());
+			VarInfo v = new VarInfo(vars.head.type, s);
+			if (!ci.addAttribute(v))
+			{
+				VarInfo old = ci.attributes.get(s);
+				e.err.Print(new Object[]{"Attribute's name '" + vars.head.name + "' was already taken on class '" + node.name + "'",
+						"Line " + vars.head.name.line + ", row " + vars.head.name.row });
+			}
+		}
+
+		for ( List<MethodDecl> methods = node.methodList; methods != null; methods = methods.tail )
+		{
+			methods.head.accept(this);
+			s = Symbol.symbol(methods.head.name.toString());
+			MethodInfo m = new MethodInfo(methods.head.returnType, s, ci.name);
+			if (!ci.addMethod(m))
+			{
+				MethodInfo old = ci.methods.get(s);
+				e.err.Print(new Object[]{"Method's name '" + methods.head.name + "' was already added",
+						"Line " + methods.head.name.line + ", row " + methods.head.name.row });
+			}
 		}
 		
-		for ( List<MethodDecl> methods = node.methodList.tail; methods != null; methods = methods.tail )
-			methods.head.accept(this);
-		
+		if (!e.classes.put(s, ci))
+			e.err.Print(new Object[]{"Class named '" + node.name + "' was already added",
+					"Line " + node.name.line + ", row " + node.name.row });
 	}
 
 	public void visit(VarDecl node)
