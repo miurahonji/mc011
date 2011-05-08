@@ -85,51 +85,22 @@ public class FirstPass implements Visitor
 
 	public void visit(ClassDeclSimple node)
 	{
-		node.name.accept(this);
-		
-		Symbol s = Symbol.symbol(node.name.toString());
-		ClassInfo ci = new ClassInfo(s);
-
-		for ( List<VarDecl> vars = node.varList; vars != null; vars = vars.tail )
-		{
-			vars.head.accept(this);
-			s = Symbol.symbol(vars.head.name.toString());
-			VarInfo v = new VarInfo(vars.head.type, s);
-			if (!ci.addAttribute(v))
-			{
-				VarInfo old = ci.attributes.get(s);
-				e.err.Print(new Object[]{"Attribute's name '" + vars.head.name + "' was already taken on class '" + node.name + "'",
-						"Line " + vars.head.name.line + ", row " + vars.head.name.row });
-			}
-		}
-
-		for ( List<MethodDecl> methods = node.methodList; methods != null; methods = methods.tail )
-		{
-			methods.head.accept(this);
-			s = Symbol.symbol(methods.head.name.toString());
-			MethodInfo m = new MethodInfo(methods.head.returnType, s, ci.name);
-			if (!ci.addMethod(m))
-			{
-				MethodInfo old = ci.methods.get(s);
-				e.err.Print(new Object[]{"Method's name '" + methods.head.name + "' was already added",
-						"Line " + methods.head.name.line + ", row " + methods.head.name.row });
-			}
-		}
-		
-		if (!e.classes.put(s, ci))
-			e.err.Print(new Object[]{"Class named '" + node.name + "' was already added",
-					"Line " + node.name.line + ", row " + node.name.row });
+		processClassDecl(node);
 	}
 
 	public void visit(ClassDeclExtends node)
 	{
-		node.name.accept(this);
+		node.superClass.accept(this);
+		processClassDecl(node);
+	}
 
+	public void processClassDecl(ClassDecl node)
+	{
+		node.name.accept(this);
+		
 		Symbol s = Symbol.symbol(node.name.toString());
 		ClassInfo ci = new ClassInfo(s);
 
-		node.superClass.accept(this);
-		
 		for ( List<VarDecl> vars = node.varList; vars != null; vars = vars.tail )
 		{
 			vars.head.accept(this);
