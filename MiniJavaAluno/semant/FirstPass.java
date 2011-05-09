@@ -129,10 +129,10 @@ public class FirstPass implements Visitor
 
 		VarInfo v = new VarInfo(lastType, lastIdentifier);
 		// Is this VarDecl from Method (local variable) or from Class (attribute)
-		if ((lastMethod != null) && (lastMethod.locals.contains(v)))
+		if ((lastMethod != null) && (!lastMethod.addLocal(v)))
 			// running from visit(MethodDecl)
-			// no override?!
-			e.err.Print(new Object[]{"Variable's name '" + lastIdentifier + "' was already taken on scope of method '" + lastMethod.name + "'",
+			// TODO: no override?!
+			e.err.Print(new Object[]{"Variable's name '" + lastIdentifier + "' was already taken on scope of method '" + lastClass.name + "." + lastMethod.name + "'",
 					"Line " + node.line + ", row " + node.row });
 		else if (!lastClass.addAttribute(v))
 			// running from processClassDecl(ClassDecl)
