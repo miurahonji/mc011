@@ -159,9 +159,9 @@ Productions
 		{array_assign} id l_brack [index]:exp r_brack assign [value]:exp semi
 			{-> New statement.array_assign(id, index.exp, value.exp)} |
 		{if_only} tok_if l_paren exp r_paren statement
-			{-> New statement.if(exp.exp, statement.statement, Null)} |
+			{-> New statement.if(tok_if, exp.exp, statement.statement, Null)} |
 		{if_else} tok_if l_paren exp r_paren [true]:statement_no_short_if tok_else [false]:statement
-			{-> New statement.if(exp.exp, true.statement, false.statement)};
+			{-> New statement.if(tok_if, exp.exp, true.statement, false.statement)};
 
 	statement_no_short_if {-> statement} =
 		{block} l_brace statement+ r_brace
@@ -175,7 +175,7 @@ Productions
 		{array_assign} id l_brack [index]:exp r_brack assign [value]:exp semi
 			{-> New statement.array_assign(id, index.exp, value.exp)} |
 		{if_else} tok_if l_paren exp r_paren [true]:statement_no_short_if tok_else [false]:statement_no_short_if
-			{-> New statement.if(exp.exp, true.statement, false.statement)};
+			{-> New statement.if(tok_if, exp.exp, true.statement, false.statement)};
 
 	exp {-> exp} =
 		{void} exp_void
@@ -278,7 +278,7 @@ Abstract Syntax Tree
         {boolean} [token]:tok_boolean |
 		{object} [name]:id;
 	statement = {block} [token]:l_brace [statements]:statement+ |
-		{if} [condition]:exp [then_clause]:statement [else_clause]:statement? |
+		{if} [token]:tok_if [condition]:exp [then_clause]:statement [else_clause]:statement? |
 		{while} [token]:tok_while [condition]:exp [body]:statement |
 		{print} [token]:tok_print [value]:exp? |
 		{assign} [target]:id [value]:exp |
