@@ -142,13 +142,14 @@ public class FirstPass implements Visitor
 
 		lastMethod = new MethodInfo(lastType, lastIdentifier, lastClass.name);
 		
+		System.out.println("<begin Formals>");
 		for ( List<Formal> f = node.formals; f != null; f = f.tail )
 		{
 			f.head.accept(this);
-			
-			if ( f.tail != null )
-				return;
+			System.out.println("\tFormal: " + lastIdentifier + " next: " + f.tail);
 		}
+		System.out.println("<end Formals>");
+
 		
 		for ( List<VarDecl> l = node.locals; l != null; l = l.tail )
 			l.head.accept(this);
@@ -167,6 +168,11 @@ public class FirstPass implements Visitor
 	{
 		node.type.accept(this);
 		node.name.accept(this);
+
+		VarInfo v = new VarInfo(lastType, lastIdentifier);
+		if (!lastMethod.addFormal(v))
+			e.err.Print(new Object[]{"Formal's '" + v + "' was already added",
+					"Line " + lastMethod.type.line + ", row " + lastMethod.type.row });
 	}
 
 	public void visit(IntArrayType node)
