@@ -87,8 +87,9 @@ public class FirstPass implements Visitor
 		node.s.accept(this);
 		
 		if (!e.classes.put(s, ci))
-			e.err.Print(new Object[]{"Main class' name '" + node.className + "' was already taken.",
-					"Line " + node.className.line + ", row " + node.className.row });
+			e.err.Print(new Object[]{"Main class' name '" + node.className +
+					"' was already taken.", "Line " + node.className.line +
+					", row " + node.className.row });
 	}
 
 	public void visit(ClassDeclSimple node)
@@ -129,15 +130,25 @@ public class FirstPass implements Visitor
 
 		VarInfo v = new VarInfo(lastType, lastIdentifier);
 		// Is this VarDecl from Method (local variable) or from Class (attribute)
-		if ((lastMethod != null) && (!lastMethod.addLocal(v)))
+		if (lastMethod != null)
+		{
 			// running from visit(MethodDecl)
-			// TODO: no override?!
-			e.err.Print(new Object[]{"Variable's name '" + lastIdentifier + "' was already taken on scope of method '" + lastClass.name + "." + lastMethod.name + "'",
-					"Line " + node.line + ", row " + node.row });
+			if (!lastMethod.addLocal(v))
+			{
+				e.err.Print(new Object[]{"Variable's name '" + lastIdentifier + 
+						"' was already taken on scope of method '" + lastClass.name + "." +
+						lastMethod.name + "'", "Line " + node.line + ", row " + node.row });
+			}
+
+		}
 		else if (!lastClass.addAttribute(v))
+		{
 			// running from processClassDecl(ClassDecl)
-			e.err.Print(new Object[]{"Attribute's name '" + lastIdentifier + "' was already taken on class '" + lastClass.name + "'",
+			e.err.Print(new Object[]{"Attribute's name '" + lastIdentifier +
+					"' was already taken on class '" + lastClass.name + "'",
 					"Line " + node.line + ", row " + node.row });
+			System.out.println(2);
+		}
 	}
 
 	public void visit(MethodDecl node)
