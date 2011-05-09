@@ -170,11 +170,6 @@ public class FirstPass implements Visitor
 		for ( List<VarDecl> l = node.locals; l != null; l = l.tail )
 			l.head.accept(this);
 		
-		for ( List<Statement> s = node.body; s != null; s = s.tail )
-			s.head.accept(this);
-		
-		node.returnExp.accept(this);
-		
 		if (!lastClass.addMethod(lastMethod))
 			e.err.Print(new Object[]{"Method's name '" + lastMethod.name + "' was already added",
 					"Line " + lastMethod.type.line + ", row " + lastMethod.type.row });
@@ -216,97 +211,77 @@ public class FirstPass implements Visitor
 
 	public void visit(Block node)
 	{
-		
-		for ( List<Statement> aux = node.body; aux != null; aux = aux.tail )
-			aux.head.accept(this);
+		return;
 	}
 
 	public void visit(If node)
 	{
-		node.condition.accept(this);
-		node.thenClause.accept(this);
-		if ( node.elseClause != null )
-			node.elseClause.accept(this);
+		return;
 	}
 
 	public void visit(While node)
 	{
-		node.condition.accept(this);
-		node.body.accept(this);
+		return;
 	}
 
 	public void visit(Print node)
 	{
-		node.exp.accept(this);
+		return;
 	}
 
 	public void visit(Assign node)
 	{
-		node.var.accept(this);
-		node.exp.accept(this);
+		return;
 	}
 
 	public void visit(ArrayAssign node)
 	{
-		node.var.accept(this);
-		node.index.accept(this);
-		node.value.accept(this);
+		return;
 	}
 
 	public void visit(And node)
 	{
-		node.lhs.accept(this);
-		node.rhs.accept(this);
+		return;
 	}
 
 	public void visit(LessThan node)
 	{
-		node.lhs.accept(this);
-		node.rhs.accept(this);
+		return;
 	}
 
 	public void visit(Equal node)
 	{
-		node.lhs.accept(this);
-		node.rhs.accept(this);
+		return;
 	}
 
 	public void visit(Plus node)
 	{
-		node.lhs.accept(this);
-		node.rhs.accept(this);
+		return;
 	}
 
 	public void visit(Minus node)
 	{
-		node.lhs.accept(this);
-		node.rhs.accept(this);
+		return;
 	}
 
 	public void visit(Times node)
 	{
-		node.lhs.accept(this);
-		node.rhs.accept(this);
+		return;
 	}
 
 	public void visit(ArrayLookup node)
 	{
-		node.array.accept(this);
-		node.index.accept(this);
+		return;
 	}
 
 	public void visit(ArrayLength node)
 	{
-		node.array.accept(this);
+		return;
 	}
 
 	public void visit(Call node)
 	{
-		node.object.accept(this);
-		node.method.accept(this);
-		
-		for ( List<Exp> aux = node.actuals; aux != null; aux = aux.tail )
-			aux.head.accept(this);
+		return;
 	}
 
 	public void visit(IntegerLiteral node)
@@ -331,22 +306,22 @@ public class FirstPass implements Visitor
 
 	public void visit(NewArray node)
 	{
-		node.size.accept(this);
+		return;
 	}
 
 	public void visit(NewObject node)
 	{
-		node.className.accept(this);
+		return;
 	}
 
 	public void visit(Not node)
 	{
-		node.exp.accept(this);
+		return;
 	}
 
 	public void visit(IdentifierExp node)
 	{
-		node.name.accept(this);
+		return;
 	}
 
 	public void visit(Identifier node)
