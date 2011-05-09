@@ -117,6 +117,9 @@ public class FirstPass implements Visitor
 		if (!e.classes.put(lastClass.name, lastClass))
 			e.err.Print(new Object[]{"Class named '" + node.name + "' was already added",
 					"Line " + node.name.line + ", row " + node.name.row });
+
+		// restoring this state
+		lastClass = null;
 	}
 
 	public void visit(VarDecl node)
@@ -127,10 +130,12 @@ public class FirstPass implements Visitor
 		VarInfo v = new VarInfo(lastType, lastIdentifier);
 		// Is this VarDecl from Method (local variable) or from Class (attribute)
 		if ((lastMethod != null) && (lastMethod.locals.contains(v)))
+			// running from visit(MethodDecl)
 			// no override?!
 			e.err.Print(new Object[]{"Variable's name '" + lastIdentifier + "' was already taken on scope of method '" + lastMethod.name + "'",
 					"Line " + node.line + ", row " + node.row });
 		else if (!lastClass.addAttribute(v))
+			// running from processClassDecl(ClassDecl)
 			e.err.Print(new Object[]{"Attribute's name '" + lastIdentifier + "' was already taken on class '" + lastClass.name + "'",
 					"Line " + node.line + ", row " + node.row });
 	}
@@ -162,6 +167,9 @@ public class FirstPass implements Visitor
 		if (!lastClass.addMethod(lastMethod))
 			e.err.Print(new Object[]{"Method's name '" + lastMethod.name + "' was already added",
 					"Line " + lastMethod.type.line + ", row " + lastMethod.type.row });
+
+		// restoring this state
+		lastMethod = null;
 	}
 
 	public void visit(Formal node)
@@ -200,7 +208,6 @@ public class FirstPass implements Visitor
 		
 		for ( List<Statement> aux = node.body; aux != null; aux = aux.tail )
 			aux.head.accept(this);
-		
 	}
 
 	public void visit(If node)
@@ -208,9 +215,7 @@ public class FirstPass implements Visitor
 		node.condition.accept(this);
 		node.thenClause.accept(this);
 		if ( node.elseClause != null )
-		{
 			node.elseClause.accept(this);
-		}
 	}
 
 	public void visit(While node)
@@ -287,18 +292,10 @@ public class FirstPass implements Visitor
 	public void visit(Call node)
 	{
 		node.object.accept(this);
-		
 		node.method.accept(this);
 		
-		
 		for ( List<Exp> aux = node.actuals; aux != null; aux = aux.tail )
-		{
 			aux.head.accept(this);
-			
-			if ( aux.tail != null )
-				return;
-		}
-		
 	}
 
 	public void visit(IntegerLiteral node)
