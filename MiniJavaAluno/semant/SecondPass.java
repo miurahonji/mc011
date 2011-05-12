@@ -41,26 +41,24 @@ import syntaxtree.VarDecl;
 import syntaxtree.While;
 import util.List;
 import visitor.Visitor;
-import semant.FirstPass;
-import semant.SecondPass;
+import semant.Env;
 
-public class TypeChecker implements Visitor
+public class SecondPass implements Visitor
 {
-    private TypeChecker()
+	private Env e;
+
+    private SecondPass()
     {
         super();
     }
 
-    public static Env TypeCheck(ErrorEchoer err, Program p)
-    {		
-		Env env = new Env(err);
+	public static void SecondPass(Env env, Program p)
+	{
 
-		// Semantic part
-		FirstPass.FirstPass(env, p);
-		SecondPass.SecondPass(env, p);
-
-    	return env;
-    }
+		SecondPass s = new SecondPass();
+		s.e = env;
+		//s.visit(p);
+	}
 
 	public void visit(Program node)
 	{

@@ -19,7 +19,6 @@ import frame.Proc;
 
 import semant.Env;
 import semant.TypeChecker;
-import semant.FirstPass;
 import syntaxtree.Program;
 import syntaxtree.PrettyPrint;
 import translate.Frag;
@@ -86,11 +85,8 @@ public final class Main
 			//----PROJETO-1: Chamada do pacote semantico ----------------------------------------------
 			
 			ErrorEchoer err = new SimpleError(name);
-			Env env = new Env(err);
-			// first pass
-			FirstPass.FirstPass(env, program);
 			// now we've got to apply the 2-pass semant analyser.
-			Env env2 = TypeChecker.TypeCheck(err, program);
+			Env env = TypeChecker.TypeCheck(err, program);
 
 			if ( err.ErrorCount() != 0 )
 			{
