@@ -111,7 +111,7 @@ Productions
 		{-> New var_decl(type.type, id)};
 
 	method_decl {-> method_decl} = 
-		tok_public type [name]:id l_paren arg_list? r_paren
+		tok_public type [name]:id arg_list* 
 		l_brace
 			var_decl*
 			statement*
@@ -122,11 +122,15 @@ Productions
 				[statement.statement], exp.exp
 			)};
 
-	arg_list {-> formal} = {arg_single} type id arg_rest*
-        {-> New formal(type.type, id)};
-
-	arg_rest {-> formal} = {arg_rest} comma type id
-		{-> New formal(type.type, id)};
+	arg_list {-> formal} = 
+		{arg_single} l_paren type id r_paren
+			{-> New formal(type.type, id)} |
+		{arg_single_rest} l_paren type id comma
+			{-> New formal(type.type, id)} |
+		{arg_rest} type id comma
+			{-> New formal(type.type, id)} |
+		{arg_rest_final} type id r_paren
+			{-> New formal(type.type, id)};
 
 	type {-> type} = 
 		{array} tok_int l_brack r_brack 
