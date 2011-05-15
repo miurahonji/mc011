@@ -47,6 +47,7 @@ import symbol.MethodInfo;
 import symbol.Symbol;
 import symbol.VarInfo;
 import syntaxtree.Type;
+import java.util.Enumeration;
 
 public class SecondPass implements Visitor
 {
@@ -73,6 +74,12 @@ public class SecondPass implements Visitor
 
 	public void visit(Program node)
 	{
+		Enumeration<Symbol> classes = e.classes.keys();
+		for (Enumeration<Symbol> k = classes; k.hasMoreElements() ;) 
+		{
+			e.classes.get(k.nextElement()).checkOverLoading(e);
+		}
+
 		node.mainClass.accept(this);
 		for ( List<ClassDecl> aux = node.classList; aux != null; aux = aux.tail )
 		{
