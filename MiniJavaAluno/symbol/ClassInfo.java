@@ -3,8 +3,10 @@ package symbol;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Enumeration;
 
 import temp.Label;
+import semant.Env;
 
 public class ClassInfo
 {
@@ -16,6 +18,7 @@ public class ClassInfo
 
 	public Hashtable<Symbol, VarInfo> attributes;
 	public Hashtable<Symbol, MethodInfo> methods;
+	public Hashtable<Symbol, MethodInfo> methodsByName;
 	
 	private HashSet<Symbol> attributesNames;
 	private HashSet<Symbol> methodsNames;
@@ -87,6 +90,7 @@ public class ClassInfo
 		
 		attributes = new Hashtable<Symbol, VarInfo>();
 		methods = new Hashtable<Symbol, MethodInfo>();
+		methodsByName = new Hashtable<Symbol, MethodInfo>();
 		
 		attributesNames = new HashSet<Symbol>();
 		methodsNames = new HashSet<Symbol>();
@@ -157,4 +161,65 @@ public class ClassInfo
 		return true;
 	}
 
+	public boolean removeMethod(MethodInfo method)
+	{
+		// using decoration allow us to have polymorphism
+		Symbol methodName = Symbol.symbol(method.decorateName());
+
+		if ( ! methodsNames.contains(methodName) )
+			return false;
+		
+		methods.remove(methodName);
+		methodsNames.remove(methodName);
+		
+		vtableIndex.remove(methodName);
+		
+		return true;
+	}
+
+	public void checkOverLoading(Env e)
+	{
+		Enumeration<MethodInfo> mInfo = methods.elements();
+		MethodInfo actualMethodInfo;
+		MethodInfo checkMethodInfo;
+		for (Enumeration<MethodInfo> m = mInfo; m.hasMoreElements() ;) 
+		{
+			actualMethodInfo = m.nextElement();
+			if (methodsByName.containsKey(actualMethodInfo.name))
+			{
+				checkMethodInfo = methodsByName.get(actualMethodInfo.name);
+				if (checkMethodInfo.type == actualMethodInfo.type && checkMethodInfo.getFormalsString() == actualMethodInfo.getFormalsString())
+				{
+					if (checkMethodInfo.parent == name)
+					{
+						removeMethod(actualMethodInfo);
+						methodsByName.put(checkMethodInfo.name, checkMethodInfo);
+					}
+					else
+					{
+						removeMethod(checkMethodInfo);
+						methodsByName.put(actualMethodInfo.name, actualMethodInfo);
+					}
+				}
+				else
+				{
+					if (getMethodOffset(Symbol.symbol(checkMethodInfo.decorateName())) < getMethodOffset(Symbol.symbol(actualMethodInfo.decorateName())))
+					{
+						checkMethodInfo = actualMethodInfo;
+						removeMethod(actualMethodInfo);
+					}
+					else
+					{
+						methodsByName.put(actualMethodInfo.name, actualMethodInfo);
+						removeMethod(checkMethodInfo);
+					}
+					e.err.Print(new Object[]{
+						"Functions overloading not allowed, removing: " + checkMethodInfo.type + " " + checkMethodInfo.name + "(" + checkMethodInfo.getFormalsString() + ") Function",
+					""});
+				}
+				continue;
+			}
+			methodsByName.put(actualMethodInfo.name, actualMethodInfo);
+		}
+	}
 }

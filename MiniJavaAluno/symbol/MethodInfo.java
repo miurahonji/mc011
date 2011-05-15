@@ -32,7 +32,17 @@ public class MethodInfo
 	
 	public String decorateName()
 	{
-		return name.toString();
+		String formalsString = getFormalsString();
+		return "@" + type + "??" + name + "@" + formalsString + "$" + parent;
+	}
+
+	public String getFormalsString()
+	{
+		StringBuffer formalsString = new StringBuffer();
+		for ( List<VarInfo> vars = formals; vars != null; vars = vars.tail )
+			formalsString.append(vars.head.type);
+
+		return formalsString.toString();
 	}
 	
 	public MethodInfo(Type t, Symbol n, Symbol p)
