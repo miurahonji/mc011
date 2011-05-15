@@ -10,4 +10,9 @@ class Principal
 
 class Obj
 {
+    public int qual()
+    {
+		a[new Obj()] = false;
+		return 0;
+    }
 }

@@ -16,3 +16,8 @@ class b extends a
 {
    public int m(b b) { return new b(); }
 }
+
+class c
+{
+   public a m(b b) { return new b(); }
+}

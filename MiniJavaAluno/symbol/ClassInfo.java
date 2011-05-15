@@ -13,7 +13,7 @@ public class ClassInfo
 	public Symbol name;
 	
 	public ClassInfo base;
-	
+
 	public Hashtable<Symbol, VarInfo> attributes;
 	public Hashtable<Symbol, MethodInfo> methods;
 	
@@ -94,6 +94,21 @@ public class ClassInfo
 		attributesOrder = new Vector<Symbol>();
 		
 		vtableIndex = new Vector<Symbol>();
+	}
+
+	public boolean checkCyclicInherit()
+	{
+		Vector<Symbol> inherited = new Vector<Symbol>();
+		for( ClassInfo i = this; i != null; i = i.base )
+		{
+			for( int check = 0; check < inherited.size(); check++ )
+				if (inherited.get(check) == i.name)
+					return false;
+
+			inherited.add(i.name);
+		}
+		return true;
+
 	}
 	
 	public boolean addAttribute(VarInfo var)

@@ -47,6 +47,8 @@ import symbol.MethodInfo;
 import symbol.Symbol;
 import symbol.VarInfo;
 import syntaxtree.Type;
+import java.util.Hashtable;
+import java.util.Vector;
 
 public class FirstPass implements Visitor
 {
@@ -57,15 +59,16 @@ public class FirstPass implements Visitor
 	private Symbol lastIdentifier;
 	private Symbol lastIdentifierType;
 	private Type lastType;
+	private Hashtable<String, Vector<ClassInfo>> toDoBase;
 
 	private FirstPass()
 	{
 		super();
+		toDoBase = new Hashtable();
 	}
 
 	public static void FirstPass(Env env, Program p)
 	{
-
 		FirstPass f = new FirstPass();
 		f.e = env;
 		f.visit(p);
@@ -94,33 +97,68 @@ public class FirstPass implements Visitor
 
 	public void visit(ClassDeclSimple node)
 	{
-		processClassDecl(node);
+		processClassDecl(node, null);
 	}
 
 	public void visit(ClassDeclExtends node)
 	{
 		node.superClass.accept(this);
-		processClassDecl(node);
+		processClassDecl(node, lastIdentifier);
 	}
 
-	public void processClassDecl(ClassDecl node)
+	public void processClassDecl(ClassDecl node, Symbol base)
 	{
 		node.name.accept(this);
 		
 		lastClass = new ClassInfo(lastIdentifier);
+
+		if (!e.classes.put(lastClass.name, lastClass))
+			e.err.Print(new Object[]{"Class named '" + node.name + "' was already added",
+					"Line " + node.name.line + ", row " + node.name.row });
 
 		for ( List<VarDecl> vars = node.varList; vars != null; vars = vars.tail )
 			vars.head.accept(this);
 
 		for ( List<MethodDecl> methods = node.methodList; methods != null; methods = methods.tail )
 			methods.head.accept(this);
-		
-		if (!e.classes.put(lastClass.name, lastClass))
-			e.err.Print(new Object[]{"Class named '" + node.name + "' was already added",
-					"Line " + node.name.line + ", row " + node.name.row });
+
+		boolean checkToDo = true;
+		if (base != null)
+		{
+			ClassInfo baseClass = e.classes.get(base);
+			if (baseClass == null)
+			{
+				Vector<ClassInfo> inherited = toDoBase.get(base.toString());
+				if (inherited == null)
+				{
+					toDoBase.put(base.toString(), new Vector<ClassInfo>());
+					inherited = toDoBase.get(base.toString());
+				}
+				inherited.add(lastClass);
+				checkToDo = false;
+			}
+			else
+				lastClass.setBase(baseClass);
+		}
+
+		if (checkToDo)
+			setBaseToDo(node.name.s.toString());
 
 		// restoring this state
 		lastClass = null;
+	}
+
+	public void setBaseToDo(String name)
+	{
+		Vector<ClassInfo> aux = toDoBase.get(name);
+		if (aux != null)
+			for ( int cl = 0; cl < aux.size(); cl++ )
+			{
+				aux.get(cl).setBase(lastClass);
+				setBaseToDo(aux.get(cl).name.toString());
+			}
+			toDoBase.remove(name);
+		return;
 	}
 
 	public void visit(VarDecl node)
@@ -147,7 +185,6 @@ public class FirstPass implements Visitor
 			e.err.Print(new Object[]{"Attribute's name '" + lastIdentifier +
 					"' was already taken on class '" + lastClass.name + "'",
 					"Line " + node.line + ", row " + node.row });
-			System.out.println(2);
 		}
 	}
 
@@ -158,13 +195,10 @@ public class FirstPass implements Visitor
 
 		lastMethod = new MethodInfo(lastType, lastIdentifier, lastClass.name);
 		
-		System.out.println("<begin Formals>");
 		for ( List<Formal> f = node.formals; f != null; f = f.tail )
 		{
 			f.head.accept(this);
-			System.out.println("\tFormal: " + lastIdentifier + " next: " + f.tail);
 		}
-		System.out.println("<end Formals>");
 
 		
 		for ( List<VarDecl> l = node.locals; l != null; l = l.tail )

@@ -111,7 +111,7 @@ Productions
 		{-> New var_decl(type.type, id)};
 
 	method_decl {-> method_decl} = 
-		tok_public type [name]:id arg_list* 
+		tok_public type [name]:id l_paren arg_list* r_paren
 		l_brace
 			var_decl*
 			statement*
@@ -123,13 +123,9 @@ Productions
 			)};
 
 	arg_list {-> formal} = 
-		{arg_single} l_paren type id r_paren
+		{arg_single} type id
 			{-> New formal(type.type, id)} |
-		{arg_single_rest} l_paren type id comma
-			{-> New formal(type.type, id)} |
-		{arg_rest} type id comma
-			{-> New formal(type.type, id)} |
-		{arg_rest_final} type id r_paren
+		{arg_rest} comma type id
 			{-> New formal(type.type, id)};
 
 	type {-> type} = 
@@ -191,7 +187,7 @@ Productions
 
 	exp_void {-> exp} =
 		{new_array} tok_new tok_int l_brack exp_method r_brack
-			{-> New exp.new_array(l_brack, exp_method.exp)};
+			{-> New exp.new_array(tok_new, exp_method.exp)};
 
 	exp_new {-> exp} =
 		{new_object} tok_new id l_paren r_paren
@@ -241,12 +237,12 @@ Productions
 		/* Exp Method */
 		{array_length} exp_method period tok_length
 			{-> New exp.array_length(tok_length, exp_method.exp)} |
-		{call}	[obj]:exp_method period id l_paren [args]:exp_list? r_paren
+		{call}	[obj]:exp_method period id l_paren [args]:exp_list* r_paren
 			{-> New exp.call(obj.exp, id, [args.exp])} |
 		/* Exp New */
 		{length_void} exp_void period tok_length
 			{-> New exp.array_length(tok_length, exp_void.exp)} |
-		{call_new}	[obj]:exp_new period id l_paren [args]:exp_list? r_paren
+		{call_new}	[obj]:exp_new period id l_paren [args]:exp_list* r_paren
 			{-> New exp.call(obj.exp, id, [args.exp])} |
 		{factor} factor
 			{-> factor.exp};
@@ -265,11 +261,11 @@ Productions
 		{exp_par} l_paren exp r_paren
 			{-> exp.exp};
 
-	exp_list {-> exp} = {exp_single} exp exp_rest*
-		{-> exp.exp};
-
-	exp_rest {-> exp} = {exp_rest} comma exp
-		{-> exp.exp};
+	exp_list {-> exp} =
+		{exp_single} exp
+			{-> exp.exp} |
+		{exp_rest} comma exp
+			{-> exp.exp};
 	
 Abstract Syntax Tree
 	program = main_class [classes]:class_decl*;
@@ -292,7 +288,7 @@ Abstract Syntax Tree
 		{array_lookup} [token]:l_brack [array]:exp [index]:exp |
 		{array_length} [token]:tok_length [array]:exp |
 		{call} [object]:exp [method]:id [actuals]:exp* |
-		{new_array} [token]:l_brack [size]:exp |
+		{new_array} [token]:tok_new [size]:exp |
 		{new_object} [name]:id |
 		{times} [token]:times [lhs]:exp [rhs]:exp |
 		{and} [token]:and [lhs]:exp [rhs]:exp |
