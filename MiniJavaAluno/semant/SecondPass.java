@@ -89,7 +89,7 @@ public class SecondPass implements Visitor
 
 	public void visit(MainClass node)
 	{
-		node.className.accept(this);
+		lastIdentifier = Symbol.symbol(node.className.s.toString());
 		lastClass = e.classes.get(lastIdentifier);
 		node.mainArgName.accept(this);
 		node.s.accept(this);
@@ -97,7 +97,7 @@ public class SecondPass implements Visitor
 
 	public void visit(ClassDeclSimple node)
 	{
-		node.name.accept(this);
+		lastIdentifier = Symbol.symbol(node.name.s.toString());
 		lastClass = e.classes.get(lastIdentifier);
 		
 		for ( List<VarDecl> vars = node.varList; vars != null; vars = vars.tail )
@@ -110,7 +110,7 @@ public class SecondPass implements Visitor
 
 	public void visit(ClassDeclExtends node)
 	{
-		node.name.accept(this);
+		lastIdentifier = Symbol.symbol(node.name.s.toString());
 		lastClass = e.classes.get(lastIdentifier);
 
 		if (!lastClass.checkCyclicInherit()){
@@ -135,10 +135,10 @@ public class SecondPass implements Visitor
 
 	public void visit(MethodDecl node)
 	{
-		node.name.accept(this);
+		lastIdentifier = Symbol.symbol(node.name.s.toString());
 		String name = lastIdentifier.toString();
 
-		lastMethod = lastClass.methods.get(Symbol.symbol(name));
+		lastMethod = lastClass.methodsByName.get(Symbol.symbol(name));
 		if (lastMethod == null)
 			return;
 
@@ -323,7 +323,7 @@ public class SecondPass implements Visitor
 	public void visit(Call node)
 	{
 		node.object.accept(this);
-		node.method.accept(this);
+		lastIdentifier = Symbol.symbol(node.method.s.toString());
 		String name = lastIdentifier.toString();
 
 		ClassInfo caller = e.classes.get(Symbol.symbol(lastType.toString()));
@@ -336,7 +336,7 @@ public class SecondPass implements Visitor
 		}
 
 		String parent = caller.name.toString();
-		lastMethod = caller.methods.get(Symbol.symbol(name));
+		lastMethod = caller.methodsByName.get(Symbol.symbol(name));
 		if (lastMethod == null)
 		{
 			e.err.Print(new Object[]{
@@ -420,7 +420,7 @@ public class SecondPass implements Visitor
 	public void visit(Identifier node)
 	{
 		lastIdentifier = Symbol.symbol(node.s.toString());
-		if (lastMethod == null)
+		if (lastMethod == null || lastClass == null)
 			return;
 
 		for (List<VarInfo> i = lastMethod.locals; i != null; i = i.tail)
