@@ -216,9 +216,7 @@ public class ClassInfo
 					e.err.Print(new Object[]{
 						"[" + checkMethodInfo.type.line + "," + checkMethodInfo.type.row + "] " +
 						"Functions overloading not allowed, removing: " + checkMethodInfo.type +
-						" " + checkMethodInfo.name + "(" + checkMethodInfo.getFormalsString() +
-						") Function",
-					""});
+						" " + checkMethodInfo.name + "(" + checkMethodInfo.getFormalsString() + ")"});
 				}
 				continue;
 			}
