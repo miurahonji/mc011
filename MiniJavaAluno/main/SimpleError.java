@@ -12,6 +12,7 @@ class SimpleError implements ErrorEchoer
     private int ec;
     private int wc;
     private PrintStream err;
+	private boolean has_error;
 
     public SimpleError(PrintStream e, String s)
     {
@@ -27,6 +28,7 @@ class SimpleError implements ErrorEchoer
     public SimpleError()
     {
         this(System.err, "-- UNKNOWN SOURCE --");
+		has_error = false;
     }
     
     public SimpleError(String s)
@@ -41,6 +43,7 @@ class SimpleError implements ErrorEchoer
 
     public void Print(Object[] msg)
     {
+		has_error = true;
         err.print(sourceName + ":");
         for ( Object o : msg )
             err.println(" " + o);
@@ -78,5 +81,10 @@ class SimpleError implements ErrorEchoer
     {
         ec = wc = 0;
     }
+
+	public boolean hasError()
+	{
+		return has_error;
+	}
 
 }

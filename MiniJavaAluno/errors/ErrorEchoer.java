@@ -10,4 +10,5 @@ public interface ErrorEchoer
 	public int ErrorCount();
 	public int WarningCount();
 	public void Reset();
+	public boolean hasError();
 }

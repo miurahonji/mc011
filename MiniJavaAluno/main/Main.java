@@ -94,6 +94,9 @@ public final class Main
 				err.Print(new Object[]{err.ErrorCount() + " erros", err.WarningCount() + " avisos"});
 				return;
 			}
+			if (! err.hasError())
+				System.out.println(new File(name).getName() + ": Sucesso");
+
 			
 		}
 		catch(Throwable e)
