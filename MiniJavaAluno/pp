@@ -39,6 +39,7 @@ def pp(folder, verbose = False):
 		os.mkdir(out_folder)
 
 	all_out = open(os.path.join(all_folder, 'g06.out'), 'w')
+	all_out.write("G06---------------------------------------------------------------------\n")
 	for f in sorted(glob.glob(os.path.join(folder, 'in', '*'))):
 		print "Executing %s..." % f
 		subp = subprocess.Popen(['java', 'main/Main', f], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
