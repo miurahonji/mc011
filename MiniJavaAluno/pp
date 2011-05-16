@@ -27,6 +27,7 @@ def pp(folder, verbose = False):
 	Also concatenates all the FOLDER/g06/* files on FOLDER/gall/g06.out
 	"""
 	import os
+	import subprocess
 	import glob
 
 	all_folder = os.path.join(folder, 'gall')
@@ -39,8 +40,9 @@ def pp(folder, verbose = False):
 
 	all_out = open(os.path.join(all_folder, 'g06.out'), 'w')
 	for f in sorted(glob.glob(os.path.join(folder, 'in', '*'))):
-		subp = os.popen('/usr/bin/java main/Main "%s"' % f)
-		content = subp.read()
+		print "Executing %s..." % f
+		subp = subprocess.Popen(['java', 'main/Main', f], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+		content = subp.stdout.read()
 
 		out_file = os.path.join(out_folder, os.path.basename(f).replace('.java','') + '.out')
 		out = open(out_file, 'w')
