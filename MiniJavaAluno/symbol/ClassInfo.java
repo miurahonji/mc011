@@ -188,7 +188,7 @@ public class ClassInfo
 			if (methodsByName.containsKey(actualMethodInfo.name))
 			{
 				checkMethodInfo = methodsByName.get(actualMethodInfo.name);
-				if (checkMethodInfo.type == actualMethodInfo.type && checkMethodInfo.getFormalsString() == actualMethodInfo.getFormalsString())
+				if (checkMethodInfo.type.toString() == actualMethodInfo.type.toString() && checkMethodInfo.getFormalsString().equals(actualMethodInfo.getFormalsString()))
 				{
 					if (checkMethodInfo.parent == name)
 					{
