@@ -214,7 +214,10 @@ public class ClassInfo
 						removeMethod(checkMethodInfo);
 					}
 					e.err.Print(new Object[]{
-						"Functions overloading not allowed, removing: " + checkMethodInfo.type + " " + checkMethodInfo.name + "(" + checkMethodInfo.getFormalsString() + ") Function",
+						"[" + checkMethodInfo.type.line + "," + checkMethodInfo.type.row + "] " +
+						"Functions overloading not allowed, removing: " + checkMethodInfo.type +
+						" " + checkMethodInfo.name + "(" + checkMethodInfo.getFormalsString() +
+						") Function",
 					""});
 				}
 				continue;

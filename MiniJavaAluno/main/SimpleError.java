@@ -41,9 +41,9 @@ class SimpleError implements ErrorEchoer
 
     public void Print(Object[] msg)
     {
-        err.println(sourceName + ":");
+        err.print(sourceName + ":");
         for ( Object o : msg )
-            err.println("    " + o);
+            err.println(" " + o);
     }
 
     public void Error(Absyn obj, Object[] msg)

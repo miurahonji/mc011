@@ -1,5 +1,6 @@
 package main;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -56,7 +57,7 @@ public final class Main
 			Start s = parser.parse();
 			
 			 //Uncomment this to print sablecc's AST.
-			System.out.println(s);
+			//System.out.println(s);
 			
 			// ... up until here, classes and package organization
 			// are decided by SableCC
@@ -84,7 +85,7 @@ public final class Main
 
 			//----PROJETO-1: Chamada do pacote semantico ----------------------------------------------
 			
-			ErrorEchoer err = new SimpleError(name);
+			ErrorEchoer err = new SimpleError(new File(name).getName());
 			// now we've got to apply the 2-pass semant analyser.
 			Env env = TypeChecker.TypeCheck(err, program);
 

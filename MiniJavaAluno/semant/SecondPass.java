@@ -115,8 +115,8 @@ public class SecondPass implements Visitor
 
 		if (!lastClass.checkCyclicInherit()){
 			e.err.Print(new Object[]{
-				"Cyclic Inheritance detected on " + node.name, 
-				"Line " + node.name.line + ", row " + node.name.row });
+				"[" + node.name.line + "," + node.name.row + "] " +
+				"Cyclic Inheritance detected on " + node.name});
 		}
 
 		for ( List<VarDecl> vars = node.varList; vars != null; vars = vars.tail )
@@ -148,8 +148,8 @@ public class SecondPass implements Visitor
 		if (!lastType.compatible(e, lastMethod.type))
 		{
 			e.err.Print(new Object[]{
-				"Incompatible types with return type '" + returnExp + "' and expected type '" + lastMethod.type + "'",
-				"Line " + node.name.line + ", row " + node.name.row });
+				"[" + node.name.line + "," + node.name.row + "] " +
+				"Incompatible types with return type '" + returnExp + "' and expected type '" + lastMethod.type + "'"});
 			return;
 		}
 		
@@ -224,8 +224,8 @@ public class SecondPass implements Visitor
 		
 		if (!varType.compatible(e, expType))
 			e.err.Print(new Object[]{
-				"Incompatible types, " + expType + " is not compatible to " + expType,
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Incompatible types, " + expType + " is not compatible to " + expType});
 	}
 
 	public void visit(ArrayAssign node)
@@ -235,14 +235,14 @@ public class SecondPass implements Visitor
 		node.index.accept(this);
 		if (!lastType.compatible(e, new IntegerType(node.line, node.row)))
 			e.err.Print(new Object[]{
-				"Index type must be a integer and found: " + lastType,
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Index type must be a integer and found: " + lastType});
 
 		node.value.accept(this);
 		if (!lastType.compatible(e, new IntegerType(node.line, node.row)))
 			e.err.Print(new Object[]{
-				"Incompatible types, " + lastType + " is not compatible to int",
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Incompatible types, " + lastType + " is not compatible to int"});
 	}
 
 	public void visit(And node)
@@ -273,8 +273,8 @@ public class SecondPass implements Visitor
 
 		if (rhsType.toString() != lhsType.toString())
 			e.err.Print(new Object[]{
-				"Left type " + lhsType + " is not compatible with right type " + rhsType,
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Left type " + lhsType + " is not compatible with right type " + rhsType });
 		lastType = rhsType;
 
 	}
@@ -289,8 +289,8 @@ public class SecondPass implements Visitor
 
 		if (rhsType.toString() != lhsType.toString())
 			e.err.Print(new Object[]{
-				"Left type " + lhsType + " is not compatible with right type " + rhsType,
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Left type " + lhsType + " is not compatible with right type " + rhsType });
 		lastType = rhsType;
 	}
 
@@ -304,8 +304,8 @@ public class SecondPass implements Visitor
 
 		if (rhsType.toString() != lhsType.toString())
 			e.err.Print(new Object[]{
-				"Left type " + lhsType + " is not compatible with right type " + rhsType,
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Left type " + lhsType + " is not compatible with right type " + rhsType });
 		lastType = rhsType;
 	}
 
@@ -330,8 +330,8 @@ public class SecondPass implements Visitor
 		if (caller == null)
 		{
 			e.err.Print(new Object[]{
-				"Method " + name + " not found at class " + lastType,
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Method " + name + " not found at class " + lastType });
 			return;
 		}
 
@@ -340,8 +340,8 @@ public class SecondPass implements Visitor
 		if (lastMethod == null)
 		{
 			e.err.Print(new Object[]{
-				"Method " + name + " not found at class " + parent,
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Method " + name + " not found at class " + parent });
 			return;
 		}
 
@@ -352,8 +352,8 @@ public class SecondPass implements Visitor
 			aux.head.accept(this);
 			if (lastType.toString() != aux2.head.type.toString())
 				e.err.Print(new Object[]{
-					"Parameter called as " + lastType + " is expected as " + aux2.head.type + " at " + name + " method",
-					"Line " + node.line + ", row " + node.row });
+					"[" + node.line + "," + node.row + "] " +
+					"Parameter called as " + lastType + " is expected as " + aux2.head.type + " at " + name + " method" });
 
 			aux = aux.tail;
 			aux2 = aux2.tail;
@@ -361,8 +361,8 @@ public class SecondPass implements Visitor
 
 		if (aux != null || aux2 != null)
 			e.err.Print(new Object[]{
-				"Parameter list size is different at " + name + ", expects " + lastMethod.formals.size() + " parameters",
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Parameter list size is different at " + name + ", expects " + lastMethod.formals.size() + " parameters" });
 
 		lastType = lastMethod.type;
 	}
@@ -401,8 +401,8 @@ public class SecondPass implements Visitor
 		else
 		{
 			e.err.Print(new Object[]{
-				"Class " + name + " is not defined.",
-				"Line " + node.line + ", row " + node.row });
+				"[" + node.line + "," + node.row + "] " +
+				"Class " + name + " is not defined." });
 			System.exit(1);
 		}
 	}
@@ -445,8 +445,8 @@ public class SecondPass implements Visitor
 		}
 		
 		e.err.Print(new Object[]{
-			"Variable " + node.s + " not declared at " + lastMethod.name,
-			"Line " + node.line + ", row " + node.row });
+			"[" + node.line + "," + node.row + "] " +
+			"Variable " + node.s + " not declared at " + lastMethod.name });
 		lastType = new IntegerType(node.line, node.row);
 	}
 }

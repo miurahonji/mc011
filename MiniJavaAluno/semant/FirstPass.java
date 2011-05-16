@@ -90,9 +90,9 @@ public class FirstPass implements Visitor
 		node.s.accept(this);
 		
 		if (!e.classes.put(s, ci))
-			e.err.Print(new Object[]{"Main class' name '" + node.className +
-					"' was already taken.", "Line " + node.className.line +
-					", row " + node.className.row });
+			e.err.Print(new Object[]{
+				"[" + node.className.line + "," + node.className.row + "] " +
+				"Main class' name '" + node.className + "' was already taken." });
 	}
 
 	public void visit(ClassDeclSimple node)
@@ -113,8 +113,9 @@ public class FirstPass implements Visitor
 		lastClass = new ClassInfo(lastIdentifier);
 
 		if (!e.classes.put(lastClass.name, lastClass))
-			e.err.Print(new Object[]{"Class named '" + node.name + "' was already added",
-					"Line " + node.name.line + ", row " + node.name.row });
+			e.err.Print(new Object[]{
+				"[" + node.name.line + "," + node.name.row + "] " +
+				"Class named '" + node.name + "' was already added" });
 
 		for ( List<VarDecl> vars = node.varList; vars != null; vars = vars.tail )
 			vars.head.accept(this);
@@ -173,18 +174,21 @@ public class FirstPass implements Visitor
 			// running from visit(MethodDecl)
 			if (!lastMethod.addLocal(v))
 			{
-				e.err.Print(new Object[]{"Variable's name '" + lastIdentifier + 
-						"' was already taken on scope of method '" + lastClass.name + "." +
-						lastMethod.name + "'", "Line " + node.line + ", row " + node.row });
+				e.err.Print(new Object[]{
+					"[" + node.line + "," + node.row + "] " +
+					"Variable's name '" + lastIdentifier + 
+					"' was already taken on scope of method '" +
+					lastClass.name + "." + lastMethod.name + "'" });
 			}
 
 		}
 		else if (!lastClass.addAttribute(v))
 		{
 			// running from processClassDecl(ClassDecl)
-			e.err.Print(new Object[]{"Attribute's name '" + lastIdentifier +
-					"' was already taken on class '" + lastClass.name + "'",
-					"Line " + node.line + ", row " + node.row });
+			e.err.Print(new Object[]{
+				"[" + node.line + "," + node.row + "] " +
+				"Attribute's name '" + lastIdentifier +
+				"' was already taken on class '" + lastClass.name + "'" });
 		}
 	}
 
@@ -205,8 +209,9 @@ public class FirstPass implements Visitor
 			l.head.accept(this);
 		
 		if (!lastClass.addMethod(lastMethod))
-			e.err.Print(new Object[]{"Method's name '" + lastMethod.name + "' was already added",
-					"Line " + lastMethod.type.line + ", row " + lastMethod.type.row });
+			e.err.Print(new Object[]{
+				"[" + lastMethod.type.line + "," + lastMethod.type.row + "] " +
+				"Method's name '" + lastMethod.name + "' was already added" });
 
 		// restoring this state
 		lastMethod = null;
@@ -219,8 +224,9 @@ public class FirstPass implements Visitor
 
 		VarInfo v = new VarInfo(lastType, lastIdentifier);
 		if (!lastMethod.addFormal(v))
-			e.err.Print(new Object[]{"Formal's '" + v + "' was already added",
-					"Line " + lastMethod.type.line + ", row " + lastMethod.type.row });
+			e.err.Print(new Object[]{
+				"[" + lastMethod.type.line + "," + lastMethod.type.row + "] " +
+				"Formal's '" + v + "' was already added" });
 	}
 
 	public void visit(IntArrayType node)
