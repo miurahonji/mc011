@@ -7,9 +7,16 @@ class m
     }
 }
 
-class c
+class A
 {
-	public int i(){return 0;}
-	public boolean i(){return false;}
+	public int i(int i){return 0;}
+	public boolean i(boolean j){return false;}
 	public c i(){return false;}
+}
+
+class c extends A
+{
+	public int i(int i){return 0;}
+	public boolean i(boolean j){return false;}
+	public A i(){return false;}
 }

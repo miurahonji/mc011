@@ -33,7 +33,7 @@ public class MethodInfo
 	public String decorateName()
 	{
 		String formalsString = getFormalsString();
-		return "@" + type + "??" + name + "@" + formalsString + "$" + parent;
+		return "??" + name + "@" + formalsString + "$" + parent;
 	}
 
 	public String getFormalsString()

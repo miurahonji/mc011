@@ -185,42 +185,35 @@ public class ClassInfo
 		for (Enumeration<MethodInfo> m = mInfo; m.hasMoreElements() ;) 
 		{
 			actualMethodInfo = m.nextElement();
-			if (methodsByName.containsKey(actualMethodInfo.name))
+			Symbol methodSignature = Symbol.symbol(actualMethodInfo.name + "@" + actualMethodInfo.getFormalsString());
+			if (methodsByName.containsKey(methodSignature))
 			{
-				checkMethodInfo = methodsByName.get(actualMethodInfo.name);
-				if (checkMethodInfo.type.toString() == actualMethodInfo.type.toString() && checkMethodInfo.getFormalsString().equals(actualMethodInfo.getFormalsString()))
+				checkMethodInfo = methodsByName.get(methodSignature);
+				boolean printError = checkMethodInfo.type.toString() != actualMethodInfo.type.toString();
+				// Assuming child's function
+				if (checkMethodInfo.parent == name)
 				{
-					if (checkMethodInfo.parent == name)
-					{
-						removeMethod(actualMethodInfo);
-						methodsByName.put(checkMethodInfo.name, checkMethodInfo);
-					}
-					else
-					{
-						removeMethod(checkMethodInfo);
-						methodsByName.put(actualMethodInfo.name, actualMethodInfo);
-					}
+					removeMethod(actualMethodInfo);
+					methodSignature = Symbol.symbol(checkMethodInfo.name + "@" + checkMethodInfo.getFormalsString());
+					methodsByName.put(methodSignature, checkMethodInfo);
+					checkMethodInfo = actualMethodInfo;
 				}
 				else
 				{
-					if (getMethodOffset(Symbol.symbol(checkMethodInfo.decorateName())) < getMethodOffset(Symbol.symbol(actualMethodInfo.decorateName())))
-					{
-						checkMethodInfo = actualMethodInfo;
-						removeMethod(actualMethodInfo);
-					}
-					else
-					{
-						methodsByName.put(actualMethodInfo.name, actualMethodInfo);
-						removeMethod(checkMethodInfo);
-					}
+					removeMethod(checkMethodInfo);
+					methodsByName.put(methodSignature, actualMethodInfo);
+				}
+
+				// Overriding
+				if (printError)
 					e.err.Print(new Object[]{
 						"[" + checkMethodInfo.type.line + "," + checkMethodInfo.type.row + "] " +
-						"Functions overloading not allowed, removing: " + checkMethodInfo.type +
+						"Same signature and different return type not allowed, removing: " + checkMethodInfo.type +
 						" " + checkMethodInfo.name + "(" + checkMethodInfo.getFormalsString() + ")"});
-				}
+
 				continue;
 			}
-			methodsByName.put(actualMethodInfo.name, actualMethodInfo);
+			methodsByName.put(methodSignature, actualMethodInfo);
 		}
 	}
 }

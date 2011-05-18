@@ -138,7 +138,11 @@ public class SecondPass implements Visitor
 		lastIdentifier = Symbol.symbol(node.name.s.toString());
 		String name = lastIdentifier.toString();
 
-		lastMethod = lastClass.methodsByName.get(Symbol.symbol(name));
+		StringBuffer formalsString = new StringBuffer();
+		for ( List<Formal> vars = node.formals; vars != null; vars = vars.tail )
+			formalsString.append(vars.head.type);
+
+		lastMethod = lastClass.methodsByName.get(Symbol.symbol(name + "@" + formalsString));
 		if (lastMethod == null)
 			return;
 
@@ -335,8 +339,15 @@ public class SecondPass implements Visitor
 			return;
 		}
 
+		StringBuffer formalsString = new StringBuffer();
+		for ( List<Exp> vars = node.actuals; vars != null; vars = vars.tail )
+		{
+			vars.head.accept(this);
+			formalsString.append(lastType);
+		}
+
 		String parent = caller.name.toString();
-		lastMethod = caller.methodsByName.get(Symbol.symbol(name));
+		lastMethod = caller.methodsByName.get(Symbol.symbol(name + "@" + formalsString));
 		if (lastMethod == null)
 		{
 			e.err.Print(new Object[]{
