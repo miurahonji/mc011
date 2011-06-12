@@ -98,7 +98,7 @@ public class RegAlloc implements TempMap
         frame = f;
         instrs = i;
         
-        regAlloc();
+        //regAlloc();
     }
     
     private void regAlloc()
