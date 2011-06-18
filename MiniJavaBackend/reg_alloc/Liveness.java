@@ -2,6 +2,7 @@ package reg_alloc;
 
 import java.io.PrintStream;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
@@ -95,8 +96,75 @@ public class Liveness extends InterferenceGraph
     
     private void computeDFA()
     {	
+        Node first = graph.nodes().head;
+		
+        in = new Hashtable<Node, HashSet<Temp>>();
+        out = new Hashtable<Node, HashSet<Temp>>();
+
+		Hashtable<Node, HashSet<Temp>> oldIn;
+		Hashtable<Node, HashSet<Temp>> oldOut;
+
+		do 
+		{
+			oldIn = (Hashtable<Node, HashSet<Temp>>)in.clone();
+			oldOut = (Hashtable<Node, HashSet<Temp>>)out.clone();
+
+			for(List<Node> nodes = graph.nodes(); nodes != null; nodes = nodes.tail)
+			{
+				computeDFAIn(nodes.head);
+				computeDFAOut(nodes.head);
+			}
+
+		} while (!oldIn.equals(in) || !oldOut.equals(out));
     }
     
+	public HashSet<Temp> computeDFAIn(Node n)
+	// Return the in hashset
+	{
+		// when in of n is empty, start by putting the use set
+        HashSet<Temp> i = in.get(n);
+		if (i == null)
+		{
+			i = (HashSet<Temp>)gen.get(n).clone();
+			in.put(n, i);
+		}
+
+		// gets out set and clone it to not modify the out set
+        HashSet<Temp> o = out.get(n);
+		if (o == null)
+		{
+			o = new HashSet<Temp>();
+			out.put(n, o);
+		}
+		else
+			o = (HashSet<Temp>)o.clone();
+
+		// do out() - def() set operation
+		Iterator itr = kill.get(n).iterator();
+		while (itr.hasNext())
+			o.remove((Temp)itr.next());
+
+		itr = o.iterator();
+		while (itr.hasNext())
+			i.add((Temp)itr.next());
+
+		return o;
+	}
+
+	public void computeDFAOut(Node n)
+	{
+        for(List<Node> nodes = n.succ(); nodes != null; nodes = nodes.tail)
+		{
+			Node succ = nodes.head;
+            HashSet<Temp> o = in.get(succ);
+			// in of succ not defined, compute the in parameter so we can do the out set of n
+			if (o == null)
+				o = computeDFAIn(succ);
+
+			out.put(n, o);
+		}
+	}
+
     private Node getNode(Temp t)
     {
         Node n = map.get(t);
