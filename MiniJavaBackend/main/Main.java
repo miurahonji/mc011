@@ -96,7 +96,7 @@ public final class Main
             if ( err.ErrorCount() != 0 )
             {
                 err.Print(new Object[]{err.ErrorCount() + " erros", err.WarningCount() + " avisos"});
-                //FIXME return;
+                System.exit(1);
             }
 			
 	    // here the AST is transformed into the Intemediate Representation
