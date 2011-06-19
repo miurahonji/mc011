@@ -34,15 +34,26 @@ public class Codegen
 		MaxMunch m = new MaxMunch(s);
 		for (List<Rest> r = m.info; r != null; r = r.tail)
 		{
-			System.out.println("REST:" + r.head.src + r.head.dst + r.head.label);
 			Instr i;
-			if (s instanceof tree.LABEL)
-				i = new LABEL(r.head.cmd, r.head.label);
-			else if (s instanceof tree.MOVE)
-				i = new MOVE(r.head.cmd, r.head.dst, r.head.src);
-			else
-				i = new OPER(r.head.cmd, r.head.dst, r.head.src, r.head.jump);
-    
+			switch (r.head.type)
+			{
+				case Rest.LABEL:
+					i = new LABEL(r.head.cmd, r.head.label);
+					break;
+				case Rest.MOVE:
+					i = new MOVE(r.head.cmd, r.head.dst.head, r.head.src.head);
+					break;
+				case Rest.OPER:
+					i = new OPER(r.head.cmd, r.head.dst, r.head.src);
+					break;
+				case Rest.OPER_TARGET:
+					i = new OPER(r.head.cmd, r.head.dst, r.head.src, r.head.targets);
+					break;
+				default:
+					i = null;
+					System.out.println("Error to decide rest's type");
+					break;
+			}
 			emit(i);
 		}
 	}
