@@ -162,6 +162,7 @@ public class Frame extends frame.Frame
     
     public Access allocLocal(boolean escapes)
     {
+        System.out.println("Entrando aqui");
         InFrame retFrame = null;
         InReg retReg = null;
         Access ret;
