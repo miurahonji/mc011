@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+#  Copyright (C) 2011 - Gustavo Serra Scalet <gsscalet@gmail.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+__AUTHOR__ = "Gustavo Serra Scalet <gsscalet@gmail.com>"
+__VERSION__ = 0.1
+
+MIN_ARGS = 2
+
+def pp(folder, step):
+	"""
+	Opens <folder>/in<step>, run every <file>.java and save the <file>.asm and
+	<file> (binary) on <folder>/g06/out<step>/.
+	"""
+	import glob
+	import os
+	import shutil
+	import subprocess
+	import sys
+
+	# prepares runtime object (only compile it once!)
+	run_time_source = 'runtime/runtime.c'
+	run_time_object = 'runtime/runtime.o'
+	print "Compiling %s..." % run_time_source
+	subp = subprocess.Popen(['gcc', '-march=i386', '-m32', '-c', run_time_source, '-o', run_time_object], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+	content = subp.stdout.read()
+
+	# defines output folder
+	root_folder = os.path.join(folder, 'g06')
+	if not os.path.isdir(root_folder):
+		os.mkdir(root_folder)
+
+	out_folder = os.path.join(root_folder, 'out' + step)
+	if not os.path.isdir(out_folder):
+		os.mkdir(out_folder)
+
+	for f in sorted(glob.glob(os.path.join(folder, 'in' + step, '*'))):
+		print "Executing %s..." % f
+		subp = subprocess.Popen(['java', 'main/Main', f], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+		content = subp.stdout.read()
+
+		# move the minijava.asm file generated to the folder that we want
+		out_root = os.path.basename(f).replace('.java','')
+		out_binary = os.path.join(out_folder, out_root)
+		out_asm = out_binary + '.asm'
+		out_object = out_binary + '.o'
+		shutil.move('minijava.asm', out_asm)
+
+		# builds out_object
+		print "Compiling %s..." % out_asm
+		subp = subprocess.Popen(['nasm', '-felf', out_asm, '-o', out_object], stdout=subprocess.PIPE)
+		content = subp.stdout.read()
+		if subp.poll():
+			print "\tnasm failed"
+			sys.exit(1)
+
+		# builds linked binary
+		print "Building %s..." % out_binary
+		subp = subprocess.Popen(['gcc', '-march=i386', '-m32', run_time_object, out_object, '-o', out_binary],
+				stdout=subprocess.PIPE)
+		content = subp.stdout.read()
+		if subp.poll():
+			print "\tlink failed"
+			sys.exit(2)
+
+if __name__ == "__main__":
+	from sys import argv, exit
+	from os import sep
+	from optparse import OptionParser
+
+	options = {
+		# 'one_letter_option' : ['full_option_name',
+			# "Help",
+			# default_value],
+		# 'v' : ['verbose',
+			# "Shows more info about the process",
+			# False],
+	}
+
+	options_list = ' '.join(["[-%s --%s]" % (o, options[o][0]) for o in options])
+	desc = pp.__doc__.replace('\t','')
+	parser = OptionParser("%%prog FOLDER STEP %s" % options_list,
+			description=desc,
+			version="%%prog %s" % __VERSION__)
+
+	for o in options:
+		shorter = '-' + o
+		longer = '--' + options[o][0]
+		if type(options[o][2]) is bool:
+			parser.add_option(shorter, longer, dest=o, help=options[o][1],
+				action="store_true", default=options[o][2])
+		elif type(options[o][2]) is str:
+			parser.add_option(shorter, longer, dest=o, help=options[o][1],
+				action="store", type="string", default=options[o][2])
+
+	(opt, args) = parser.parse_args(argv)
+	if len(args) < MIN_ARGS + 1:
+		# not enough arguments
+		print """ERROR: not enough arguments.
+Try `%s --help' for more information""" % args[0].split(sep)[-1]
+		exit(1)
+
+	pp(args[1], args[2])
+
