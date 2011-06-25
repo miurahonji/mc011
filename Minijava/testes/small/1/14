@@ -1,0 +1,12 @@
+class m
+{
+	public static void main(String[] args)
+	{
+		System.out.println(new c().i(10));
+	}
+}
+
+class c
+{
+	public int i(int j){return j;}
+}
