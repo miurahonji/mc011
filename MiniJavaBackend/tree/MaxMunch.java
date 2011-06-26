@@ -186,10 +186,10 @@ public class MaxMunch
 				defineRest("sub `d0, `s0", r, Rest.OPER);
 				break;
 			case BINOP.TIMES:
-				defineRest("mul `d0, `s0", r, Rest.OPER);
+				defineRest("imul `d0, `s0", r, Rest.OPER);
 				break;
 			case BINOP.DIV:
-				defineRest("div `d0, `s0", r, Rest.OPER);
+				defineRest("idiv `d0, `s0", r, Rest.OPER);
 				break;
 			case BINOP.AND:
 				defineRest("and `d0, `s0", r, Rest.OPER);
@@ -198,10 +198,10 @@ public class MaxMunch
 				defineRest("or `d0, `s0", r, Rest.OPER);
 				break;
 			case BINOP.LSHIFT:
-				defineRest("lsh `d0, `s0", r, Rest.OPER);
+				defineRest("shl `d0, `s0", r, Rest.OPER);
 				break;
 			case BINOP.RSHIFT:
-				defineRest("rsh `d0, `s0", r, Rest.OPER);
+				defineRest("shr `d0, `s0", r, Rest.OPER);
 				break;
 			case BINOP.ARSHIFT:
 				defineRest("arsh `d0, `s0", r, Rest.OPER);
@@ -246,7 +246,7 @@ public class MaxMunch
 
 		r = new Rest();
 		r.addDst(t);
-		defineRest("addi `d0, " + e.value, r, Rest.OPER);
+		defineRest("add `d0, " + e.value, r, Rest.OPER);
 
 		r = new Rest();
 		r.addDst(t);
