@@ -224,12 +224,8 @@ public class MaxMunch
 			// label : move it to a register as string
 			if (ra.label != null)
 			{
-				System.out.println( " DUmp before: ====");
-				dump();
 				ra.addDst(new Temp());
 				defineRest("mov `d0, " + ra.label.toString(), ra, Rest.MOVE);
-				System.out.println( " DUmp after: ====");
-				dump();
 			}
 			ra.addDst(ra.dst.head);
 			defineRest("push `d0", ra, Rest.OPER);
@@ -237,7 +233,12 @@ public class MaxMunch
 		r.addDst(new Temp());
 
 		Rest rr = maxMunch(e.func);
-		defineRest("call " + rr.label, r, Rest.OPER);
+		if (rr.label != null)
+			defineRest("call " + rr.label, r, Rest.OPER);
+		else{
+			r.addDst(rr.dst.head);
+			defineRest("call `d0", r, Rest.OPER);
+		}
 
 		rr = new Rest();
 		Temp t = new Temp();
@@ -282,6 +283,7 @@ public class MaxMunch
 	private Rest maxMunch(NAME e){		
 		Rest r = new Rest();
 		r.label = e.label;
+		System.out.println(" NAME: " + e.label);
 		return r;
 	}
 
