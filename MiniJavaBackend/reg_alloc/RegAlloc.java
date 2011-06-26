@@ -147,7 +147,6 @@ public class RegAlloc implements TempMap
     {
         cfg = new AssemFlowGraph(instrs);
         dfa = new Liveness(cfg);        
-        dfa.dump(System.out);
     }
     
     private void Init()
