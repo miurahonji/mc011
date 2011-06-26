@@ -30,7 +30,7 @@ public class Rest {
 		targets = null;
 		jump = null;
 		value = 0;
-		type = 0;
+		type = -1;
 	}
 
 	public void addSrc(Temp s)
