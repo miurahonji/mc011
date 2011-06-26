@@ -32,6 +32,7 @@ public class Codegen
 
     private void munchStm (Stm s) {
 		MaxMunch m = new MaxMunch(s);
+		m.dump();
 		for (List<Rest> r = m.info; r != null; r = r.tail)
 		{
 			Instr i;

@@ -224,8 +224,12 @@ public class MaxMunch
 			// label : move it to a register as string
 			if (ra.label != null)
 			{
+				System.out.println( " DUmp before: ====");
+				dump();
 				ra.addDst(new Temp());
 				defineRest("mov `d0, " + ra.label.toString(), ra, Rest.MOVE);
+				System.out.println( " DUmp after: ====");
+				dump();
 			}
 			ra.addDst(ra.dst.head);
 			defineRest("push `d0", ra, Rest.OPER);
