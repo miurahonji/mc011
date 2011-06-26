@@ -29,5 +29,5 @@ prog:
 binary:
 	gcc -march=i386 -m32 -c runtime/runtime.c
 	nasm -felf minijava.asm
-	gcc -march=i386 -m32 minijava.o runtime.o -o minijava
+	gcc -march=i386 -m32 minijava.o runtime.o -o bin
 
