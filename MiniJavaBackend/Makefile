@@ -1,4 +1,7 @@
-all: java prog
+all: grammar java prog
+
+grammar:
+	cd ../ && ./sablecc MiniJavaAluno/grammar.sablecc
 
 java:
 	javac ./x86/*.java
