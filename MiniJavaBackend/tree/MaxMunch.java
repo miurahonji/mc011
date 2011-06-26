@@ -296,5 +296,12 @@ public class MaxMunch
 		else 
 			last = last.tail = new List<Rest>(r, null);
 	}
+
+	public void dump(){
+		System.out.println(" ** DUMP START **");
+		for (List<Rest> r = info; r != null; r = r.tail)
+			System.out.println(r.head.cmd);
+		System.out.println(" ** DUMP END **");
+	}
 }
     
