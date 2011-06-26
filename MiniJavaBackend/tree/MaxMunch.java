@@ -198,13 +198,16 @@ public class MaxMunch
 				defineRest("or `d0, `s0", r, Rest.OPER);
 				break;
 			case BINOP.LSHIFT:
-				defineRest("shl `d0, `s0", r, Rest.OPER);
+				r.src = null;
+				defineRest("shl `d0, " + ((CONST)e.right).value, r, Rest.OPER);
 				break;
 			case BINOP.RSHIFT:
-				defineRest("shr `d0, `s0", r, Rest.OPER);
+				r.src = null;
+				defineRest("shr `d0, " + ((CONST)e.right).value, r, Rest.OPER);
 				break;
 			case BINOP.ARSHIFT:
-				defineRest("arsh `d0, `s0", r, Rest.OPER);
+				r.src = null;
+				defineRest("arsh `d0, " + ((CONST)e.right).value, r, Rest.OPER);
 				break;
 			case BINOP.XOR:
 				defineRest("xor `d0, `s0", r, Rest.OPER);

@@ -1,7 +1,7 @@
 all: grammar java prog
 
 grammar:
-	cd ../ && ./sablecc MiniJavaAluno/grammar.sablecc
+	cd ../ && ./sablecc MiniJavaBackend/grammar.sablecc
 
 java:
 	javac ./x86/*.java
