@@ -221,6 +221,12 @@ public class MaxMunch
 		for (List<Exp> arg = e.args; arg != null; arg = arg.tail)
 		{
 			Rest ra = maxMunch(arg.head);
+			// label : move it to a register as string
+			if (ra.label != null)
+			{
+				ra.addDst(new Temp());
+				defineRest("mov `d0, " + ra.label.toString(), ra, Rest.MOVE);
+			}
 			ra.addDst(ra.dst.head);
 			defineRest("push `d0", ra, Rest.OPER);
 		}
