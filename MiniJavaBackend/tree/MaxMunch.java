@@ -283,7 +283,9 @@ public class MaxMunch
 
 	private Rest maxMunch(TEMP e){		
 		System.out.println(" uppercase: " + e.getClass());
-		return new Rest();}
+		Rest r = new Rest();
+		r.addDst(new Temp());
+		return r;}
 
 	private void defineRest(String cmd, Rest r, int type){
 		r.cmd = cmd;
