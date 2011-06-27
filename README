@@ -10,9 +10,6 @@ Roberto Miura Honji
 HOW TO USE
 ==========
 
-# compile the lib
-javac StraightLine/*.java
-# compile what you want to run
-javac Example.java
-# run it
-java Example
+cd MiniJavaBackend/
+make
+
