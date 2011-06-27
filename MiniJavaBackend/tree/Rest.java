@@ -32,6 +32,30 @@ public class Rest {
 		value = 0;
 		type = -1;
 	}
+	public void clone(Rest r) {
+		for (List<Temp> x = r.src; x != null; x = x.tail)
+			addSrc(x.head);
+
+		for (List<Temp> x = r.dst; x != null; x = x.tail)
+			addDst(x.head);
+		
+		if (r.label != null)
+			label = new Label(r.label.toString());
+
+		for (List<Label> x = r.targets; x != null; x = x.tail)
+			addTarget(x.head);
+
+		if (r.jump != null)
+			jump = new Targets(r.jump.labels);
+
+		value = r.value;
+		// Esses dois não precisa
+		// sim, pq sao sobreescritos.. mas eu deixem, clone ẽ clone ué... Mas vamos tirar e ver o que acontece, pra mim tambem não é isso
+		// ok
+		// e q a gente abandonasse a idẽia do clone e revesse cada chamada ao defineRest!? muito trsampo nẽ... 
+		// Nem eh, mas daria o mesmo pau, eu ac
+		// srry, vai!
+	}
 
 	public void addSrc(Temp s)
 	{
@@ -47,6 +71,14 @@ public class Rest {
 			dst = new List<Temp>(s, null);
 		else
 			dst.tail = new List<Temp>(s, null);
+	}
+
+	public void addTarget(Label s)
+	{
+		if (targets == null)
+			targets = new List<Label>(s, null);
+		else
+			targets.tail = new List<Label>(s, null);
 	}
 }
 

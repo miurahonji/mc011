@@ -97,7 +97,8 @@ public class MaxMunch
 	private Rest maxMunch(JUMP s)
 	{
 		Rest r = new Rest();
-		r.targets = s.targets;
+		for (List<Label> x = s.targets; x != null; x = x.tail)
+			r.addTarget(x.head);
 		defineRest("jmp `j0", r, Rest.OPER_TARGET);
 		return r;
 	}
@@ -220,32 +221,34 @@ public class MaxMunch
 	}
 
 	private Rest maxMunch(CALL e){		
-		Rest r = new Rest();
 		for (List<Exp> arg = e.args; arg != null; arg = arg.tail)
 		{
-			Rest ra = maxMunch(arg.head);
+			Rest rr = maxMunch(arg.head);
+			Rest r = new Rest();
+			r.addSrc(new Temp());
 			// label : move it to a register as string
-			if (ra.label != null)
+			if (rr.label != null)
 			{
-				ra.addDst(new Temp());
-				defineRest("mov `d0, " + ra.label.toString(), ra, Rest.MOVE);
+				r.addDst(new Temp());
+				defineRest("mov `d0, " + rr.label.toString(), r, Rest.MOVE);
+				defineRest("push `d0", r, Rest.OPER);
 			}
-			ra.addDst(ra.dst.head);
-			defineRest("push `d0", ra, Rest.OPER);
+			else
+			{
+				r.addSrc(new Temp());
+				r.addDst(rr.dst.head);
+				defineRest("push `d0", r, Rest.OPER);
+			}
 		}
-		r.addDst(new Temp());
 
 		Rest rr = maxMunch(e.func);
 		if (rr.label != null)
-			defineRest("call " + rr.label, r, Rest.OPER);
-		else{
-			r.addDst(rr.dst.head);
-			defineRest("call `d0", r, Rest.OPER);
-		}
+			defineRest("call " + rr.label, rr, Rest.OPER);
+		else
+			defineRest("call `d0", rr, Rest.OPER);
 
 		rr = new Rest();
-		Temp t = new Temp();
-		rr.addDst(t);
+		rr.addDst(new Temp());
 		defineRest("pop `d0", rr, Rest.OPER);
 		return rr;
 	}
@@ -275,12 +278,13 @@ public class MaxMunch
 
 	private Rest maxMunch(MEM e){
 		System.out.println(" uppercase: " + e.getClass());
+		Rest rr = new Rest();
 		Rest r = maxMunch(e.exp);
-		r.addSrc(r.dst.head);
-		r.addDst(new Temp());
+		rr.addSrc(r.src.head);
+		rr.addDst(new Temp());
 		// FIXME
-		defineRest("mov `d0, [`s0]", r, Rest.MOVE);
-		return r;
+		defineRest("mov `d0, [`s0]", rr, Rest.MOVE);
+		return rr;
 	}
 
 	private Rest maxMunch(NAME e){		
@@ -297,13 +301,23 @@ public class MaxMunch
 		return r;}
 
 	private void defineRest(String cmd, Rest r, int type){
-		r.cmd = cmd;
-		r.type = type;
-		
-		if (info == null)
-			last = info = new List<Rest>(r, null);
-		else 
-			last = last.tail = new List<Rest>(r, null);
+               r.cmd = cmd;
+               r.type = type;
+               
+               if (info == null)
+                       last = info = new List<Rest>(r, null);
+               else 
+                       last = last.tail = new List<Rest>(r, null);
+
+	//	Rest rr = new Rest();
+	//	rr.clone(r);
+	//	rr.cmd = cmd;
+	//	rr.type = type;
+	//	
+	//	if (info == null)
+	//		last = info = new List<Rest>(rr, null);
+	//	else 
+			//last = last.tail = new List<Rest>(rr, null);
 	}
 
 	public void dump(){
