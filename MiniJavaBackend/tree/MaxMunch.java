@@ -5,6 +5,7 @@ import assem.Targets;
 import util.List;
 import temp.Temp;
 import temp.Label;
+import x86.Frame;
 
 public class MaxMunch
 {
@@ -43,49 +44,43 @@ public class MaxMunch
 		Rest right = maxMunch(s.right);
 		r.addSrc(right.dst.head);
 		r.addDst(left.dst.head);
+		defineRest("cmp `d0, `s0", r, Rest.OPER);
 		switch (s.op)
 		{
 			case CJUMP.EQ:
-				defineRest("eq `d0, `s0", r, Rest.OPER);
+				defineRest("je " + s.ifTrue, r, Rest.OPER);
 				break;
 			case CJUMP.NE:
-				defineRest("ne `d0, `s0", r, Rest.OPER);
+				defineRest("jne " + s.ifTrue, r, Rest.OPER);
 				break;
 			case CJUMP.LT:
-				defineRest("lt `d0, `s0", r, Rest.OPER);
+				defineRest("jl " + s.ifTrue, r, Rest.OPER);
 				break;
 			case CJUMP.LE:
-				defineRest("le `d0, `s0", r, Rest.OPER);
+				defineRest("jle " + s.ifTrue, r, Rest.OPER);
 				break;
 			case CJUMP.GT:
-				defineRest("gt `d0, `s0", r, Rest.OPER);
+				defineRest("jg " + s.ifTrue, r, Rest.OPER);
 				break;
 			case CJUMP.GE:
-				defineRest("ge `d0, `s0", r, Rest.OPER);
+				defineRest("jge " + s.ifTrue, r, Rest.OPER);
 				break;
 			case CJUMP.ULT:
-				defineRest("ult `d0, `s0", r, Rest.OPER);
+				defineRest("jl " + s.ifTrue, r, Rest.OPER);
 				break;
 			case CJUMP.ULE:
-				defineRest("ule `d0, `s0", r, Rest.OPER);
+				defineRest("jle " + s.ifTrue, r, Rest.OPER);
 				break;
 			case CJUMP.UGT:
-				defineRest("ugt `d0, `s0", r, Rest.OPER);
+				defineRest("jg " + s.ifTrue, r, Rest.OPER);
 				break;
 			case CJUMP.UGE:
-				defineRest("uge `d0, `s0", r, Rest.OPER);
+				defineRest("jge " + s.ifTrue, r, Rest.OPER);
 				break;
 			default:
 				System.out.println("Wrong OP on CJUMP");
 				break;
 		}
-
-		r = new Rest();
-		defineRest("je " + s.ifTrue, r, Rest.OPER);
-
-		r = new Rest();
-		defineRest("jne " + s.ifFalse, r, Rest.OPER);
-	
 		return r;
 	}
 
@@ -97,8 +92,9 @@ public class MaxMunch
 	private Rest maxMunch(JUMP s)
 	{
 		Rest r = new Rest();
-		for (List<Label> x = s.targets; x != null; x = x.tail)
-			r.addTarget(x.head);
+		//for (List<Label> x = s.targets; x != null; x = x.tail)
+		//	r.addTarget(x.head);
+		r.targets = s.targets;
 		defineRest("jmp `j0", r, Rest.OPER_TARGET);
 		return r;
 	}
@@ -142,7 +138,7 @@ public class MaxMunch
 			r.addSrc(rr.dst.head);
 		}
 
-		defineRest("mov `d0, `s0", r, Rest.MOVE);
+		defineRest("mov `d0, `s0", r, Rest.OPER);
 		return r;
 	}
 
@@ -220,8 +216,19 @@ public class MaxMunch
 		return r;
 	}
 
+
 	private Rest maxMunch(CALL e){		
+		List<Exp> rev_arg = null;
 		for (List<Exp> arg = e.args; arg != null; arg = arg.tail)
+		{
+			if (rev_arg == null)
+				rev_arg = new List<Exp>(arg.head, null);
+			else 
+				rev_arg = new List<Exp>(arg.head, rev_arg);
+		}
+
+		
+		for (List<Exp> arg = rev_arg; arg != null; arg = arg.tail)
 		{
 			Rest rr = maxMunch(arg.head);
 			Rest r = new Rest();
@@ -229,8 +236,9 @@ public class MaxMunch
 			// label : move it to a register as string
 			if (rr.label != null)
 			{
-				r.addDst(new Temp());
-				defineRest("mov `d0, " + rr.label.toString(), r, Rest.MOVE);
+				Temp t = new Temp();
+				r.addDst(t);
+				defineRest("mov `d0, " + rr.label.toString(), r, Rest.OPER);
 				defineRest("push `d0", r, Rest.OPER);
 			}
 			else
@@ -247,9 +255,17 @@ public class MaxMunch
 		else
 			defineRest("call `d0", rr, Rest.OPER);
 
+		if (e.args.size() > 0)
+		{
+			rr = new Rest();
+			rr.addDst(x86.Frame.esp);
+			defineRest("add `d0, " + (4*e.args.size()), rr, Rest.OPER);
+		}
+
 		rr = new Rest();
 		rr.addDst(new Temp());
-		defineRest("pop `d0", rr, Rest.OPER);
+		rr.addSrc(x86.Frame.eax);
+		defineRest("mov `d0, `s0", rr, Rest.OPER);
 		return rr;
 	}
 
@@ -257,6 +273,8 @@ public class MaxMunch
 		System.out.println(" uppercase: " + e.getClass());
 		
 		Rest r = new Rest();
+		//r.addDst(new Temp());
+		//defineRest("mov `d0, " + e.value, r, Rest.OPER);
 		Temp t = new Temp();
 		r.addDst(t);
 		defineRest("xor `d0, `d0", r, Rest.OPER);
@@ -280,10 +298,9 @@ public class MaxMunch
 		System.out.println(" uppercase: " + e.getClass());
 		Rest rr = new Rest();
 		Rest r = maxMunch(e.exp);
-		rr.addSrc(r.src.head);
+		rr.addSrc(r.dst.head);
 		rr.addDst(new Temp());
-		// FIXME
-		defineRest("mov `d0, [`s0]", rr, Rest.MOVE);
+		defineRest("mov `d0, [`s0]", rr, Rest.OPER);
 		return rr;
 	}
 
@@ -297,27 +314,27 @@ public class MaxMunch
 	private Rest maxMunch(TEMP e){		
 		System.out.println(" uppercase: " + e.getClass());
 		Rest r = new Rest();
-		r.addDst(new Temp());
+		r.addDst(e.temp);
 		return r;}
 
 	private void defineRest(String cmd, Rest r, int type){
-               r.cmd = cmd;
-               r.type = type;
-               
-               if (info == null)
-                       last = info = new List<Rest>(r, null);
-               else 
-                       last = last.tail = new List<Rest>(r, null);
+		//r.cmd = cmd;
+		//r.type = type;
+		//
+		//if (info == null)
+		//		last = info = new List<Rest>(r, null);
+		//else 
+		//		last = last.tail = new List<Rest>(r, null);
 
-	//	Rest rr = new Rest();
-	//	rr.clone(r);
-	//	rr.cmd = cmd;
-	//	rr.type = type;
-	//	
-	//	if (info == null)
-	//		last = info = new List<Rest>(rr, null);
-	//	else 
-			//last = last.tail = new List<Rest>(rr, null);
+		Rest rr = new Rest();
+		rr.clone(r);
+		rr.cmd = cmd;
+		rr.type = type;
+		
+		if (info == null)
+			last = info = new List<Rest>(rr, null);
+		else 
+			last = last.tail = new List<Rest>(rr, null);
 	}
 
 	public void dump(){

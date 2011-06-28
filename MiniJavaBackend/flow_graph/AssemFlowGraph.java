@@ -54,8 +54,7 @@ public class AssemFlowGraph extends FlowGraph
             {
                 for ( List<Label> a = jmps.labels; a != null; a = a.tail )
                 {
-                    this.addEdge(revMap.get(aux.head),
-                            revMap.get(map1.get(a.head)));
+                    this.addEdge(revMap.get(aux.head), revMap.get(map1.get(a.head)));
                 }
             }
         }        

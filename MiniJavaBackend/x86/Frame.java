@@ -43,8 +43,8 @@ public class Frame extends frame.Frame
     public Frame parent;
     
     static Temp ebp = new Temp();
-    static Temp esp = new Temp();
-    static Temp eax = new Temp();
+    public static Temp esp = new Temp();
+    public static Temp eax = new Temp();
     static Temp ebx = new Temp();
     static Temp ecx = new Temp();
     static Temp edx = new Temp();
